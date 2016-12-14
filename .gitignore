@@ -1,0 +1,10 @@
+/node_modules
+/.idea
+/*.dmp
+*.map
+vendor
+maps
+/projectFilesBackup/.idea/*.xml
+/dist.dev
+/dist.prod
+.project
