@@ -11,8 +11,10 @@
   "devDependencies": {
     "browser-sync": "^2.18.5",
     "gulp": "^3.9.1",
-    "gulp-inject": "^4.1.0",
-    "gulp-sass": "^3.0.0"
+    "gulp-inject": "^4.2.0",
+    "gulp-sass": "^3.0.0",
+    "gulp-scss": "^1.4.0",
+    "gulp-sequence": "^0.4.6"
   },
   "dependencies": {
     "angular": "^1.6.0"

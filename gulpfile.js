@@ -6,22 +6,24 @@ var gulp = require('gulp'),
 //关于gulp，一般除了全局安装一个以外，项目里面也得安装一个。只在全局安装，可能require不到，或者别的地方克隆了你的项目后，npm install之
 // 后，可能依然启动不了gulp的服务，因为对方可能全局没有安装过gulp；只在项目中安装gulp，在命令行中只有cd到gulp目录下才能运行gulp命令，
 // 否则运行不了（使用webstom把目录定位到gulp文件的话也可以直接运行）。
+  scss = require('gulp-scss'),//编译scss
   sass = require('gulp-sass'),//编译sass
+  sequence = require('gulp-sequence').use(gulp),//批量执行依赖任务，且按照参数中书写顺序
   browserSync = require('browser-sync'),//启动server或者proxy代理（解决本地跨域。
   inject = require('gulp-inject');
 
 //gulp.task是书写命令，gulp.src是输入或针对某/某些文件，gulp.dest输出到指定文件，gulp.watch监听某/某些文件
-//return是为了有返回值，从而是些pipe管道函数
-gulp.task('sass', function () {//写一个sass命令
-  return gulp.src('src/**/*.sass') //该任务针对的文件
+//return是为了有返回值，从而书写pipe管道函数
+gulp.task('scss', function () {//写一个scss命令
+  return gulp.src('src/**/*.scss') //该任务针对的文件
     .pipe(sass()) //该任务调用的模块
-    .pipe(gulp.dest('src/css')); //将会在src/css下生成index.css
+    .pipe(gulp.dest('dist')); //将会在dist/css下生成style.css
 });
 
 gulp.task('watch',function(){//写一个监听命令
   return gulp.watch([//监听
     'src/**/*.css',//被监听的文件
-    'src/**/*.html',//被监听的文件//被监听的文件
+    'src/**/*.html',//被监听的文件
     'src/**/*.js'//被监听的文件
   ],['reload']);//监听后要执行的任务
 });
@@ -43,6 +45,7 @@ gulp.task('browserSync',function(){//服务器和代理的命令
       port: 9001//设置界面端口
     },
     files: [//监听，并刷新
+      'src/**/*.scss',//被监听的文件
       'src/**/*.css',//被监听的文件
       'src/**/*.html',//被监听的文件
       'src/**/*.js'//被监听的文件
@@ -55,4 +58,11 @@ gulp.task('reload', function(){//浏览器重载，刷新
   browserSync.reload();//重载刷新的方法
 });
 
-gulp.task('default',['sass','browserSync','watch']);//启动gulp时的默认任务
+gulp.task('inject',function(){
+  return gulp.src('src/index.html')
+    .pipe(inject(gulp.src(['dist/**/*.js', 'dist/**/*.css'], {read: false})))
+    .pipe(gulp.dest('dist'));
+});
+
+//gulp.task('default',['browserSync','scss','inject','watch']);//启动gulp时的默认任务
+gulp.task('default', sequence('browserSync','scss','inject','watch'));//默认任务
