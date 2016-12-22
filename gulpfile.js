@@ -15,24 +15,24 @@ var gulp = require('gulp'),
 //gulp.task是书写命令，gulp.src是输入或针对某/某些文件，gulp.dest输出到指定文件，gulp.watch监听某/某些文件
 //return是为了有返回值，从而书写pipe管道函数
 gulp.task('scss', function () {//写一个scss命令
-  return gulp.src('src/**/*.scss') //该任务针对的文件
+  return gulp.src('./src/**/*.scss') //该任务针对的文件
     .pipe(sass()) //该任务调用的模块
-    .pipe(gulp.dest('dist')); //将会在dist/css下生成style.css
+    .pipe(gulp.dest('./dist/css')); //将会在dist/css下生成style.css
 });
 
 gulp.task('watch',function(){//写一个监听命令
   return gulp.watch([//监听
-    'src/**/*.css',//被监听的文件
-    'src/**/*.html',//被监听的文件
-    'src/**/*.js'//被监听的文件
+    './src/**/*.css',//被监听的文件
+    './src/**/*.html',//被监听的文件
+    './src/**/*.js'//被监听的文件
   ],['reload']);//监听后要执行的任务
 });
 
 gulp.task('browserSync',function(){//服务器和代理的命令
   browserSync.init({//browserSync的初始化的配置
     server: {//server对象
-      baseDir: "src",//要启动文件的目录
-      index: 'index.html',//要启动的文件
+      baseDir: "./dist",//要启动文件的目录
+      index: './index.html',//要启动的文件
       //routes: {//插件根目录
       //  '/XXX': 'xxxx'//该插件的文件位置
       //},
@@ -45,10 +45,10 @@ gulp.task('browserSync',function(){//服务器和代理的命令
       port: 9001//设置界面端口
     },
     files: [//监听，并刷新
-      'src/**/*.scss',//被监听的文件
-      //'src/**/*.css',//被监听的文件
-      'src/**/*.html',//被监听的文件
-      'src/**/*.js'//被监听的文件
+      './src/**/*.scss',//被监听的文件
+      //'./src/**/*.css',//被监听的文件
+      './src/**/*.html',//被监听的文件
+      './src/**/*.js'//被监听的文件
     ],
     open: false//每次启动此任务是否打开新的浏览器页面
   });
@@ -59,14 +59,16 @@ gulp.task('reload', function(){//浏览器重载，刷新
 });
 
 gulp.task('inject',function(){
-  return gulp.src('src/index.html')
-    .pipe(inject(gulp.src(['dist/**/*.js', 'dist/**/*.css'], {read: false},{starttag: '<!-- inject:{{ext}} -->'})))
-    .pipe(gulp.dest('dist'));
+  return gulp.src('./src/index.html')
+    .pipe(inject(gulp.src(['./dist/**/*.js', './dist/**/*.css'], {read: false},{starttag: '<!-- inject:{{ext}} -->'}), { relative: false,ignorePath: 'dist/', addRootSlash: false }))
+    .pipe(gulp.dest('./dist'));
 });
 //关于inject。1.gulp中：inject(gulp.src(['dist/**/*.js', 'dist/**/*.css'], {read: false},{starttag: '<!-- inject:dist:{{ext}} -->'}))中，
 //{starttag: '<!-- inject:dist:{{ext}} -->'}是自定义标签，inject是固定的。dist是指指定的文件名，不加则为所有。{{ext}}是指文件类型，
 //就写{{ext}}指所有类型，可写为css或js等，那就是指具体的类型了。2：html中：<!-- inject:dist:css --><!-- endinject -->写在head标签里，固定格式，只有
 //中间的dist是指文件名，可以不写，若写，则与gulp中文件名一致。<!-- inject:dist:js --><!-- endinject -->规则同上，只是写在body里。
+//{ relative: false,ignorePath: 'dist/', addRootSlash: false }.relative为true时，相对路径且ignorePath的设置无效。relative为false时，
+//为绝对路径，且ignorePath的设置有效，意为忽略某段路径。addRootSlash暂时不知。
 //html as target: <!-- {{name}}:{{ext}} -->
 //haml as target: -# {{name}}:{{ext}}
 //jade as target: //- {{name}}:{{ext}}
