@@ -68,7 +68,7 @@ gulp.task('inject',function(){
 //就写{{ext}}指所有类型，可写为css或js等，那就是指具体的类型了。2：html中：<!-- inject:dist:css --><!-- endinject -->写在head标签里，固定格式，只有
 //中间的dist是指文件名，可以不写，若写，则与gulp中文件名一致。<!-- inject:dist:js --><!-- endinject -->规则同上，只是写在body里。
 //{ relative: false,ignorePath: 'dist/', addRootSlash: false }.relative为true时，相对路径且ignorePath的设置无效。relative为false时，
-//为绝对路径，且ignorePath的设置有效，意为忽略某段路径。addRootSlash暂时不知。
+//为绝对路径，且ignorePath的设置有效，意为忽略某段路径。addRootSlash,是否在路径前面添加'/'。
 //html as target: <!-- {{name}}:{{ext}} -->
 //haml as target: -# {{name}}:{{ext}}
 //jade as target: //- {{name}}:{{ext}}
