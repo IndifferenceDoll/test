@@ -46,7 +46,7 @@ gulp.task('browserSync',function(){//服务器和代理的命令
     },
     files: [//监听，并刷新
       'src/**/*.scss',//被监听的文件
-      'src/**/*.css',//被监听的文件
+      //'src/**/*.css',//被监听的文件
       'src/**/*.html',//被监听的文件
       'src/**/*.js'//被监听的文件
     ],
@@ -60,9 +60,21 @@ gulp.task('reload', function(){//浏览器重载，刷新
 
 gulp.task('inject',function(){
   return gulp.src('src/index.html')
-    .pipe(inject(gulp.src(['dist/**/*.js', 'dist/**/*.css'], {read: false})))
+    .pipe(inject(gulp.src(['dist/**/*.js', 'dist/**/*.css'], {read: false},{starttag: '<!-- inject:{{ext}} -->'})))
     .pipe(gulp.dest('dist'));
 });
+//关于inject。1.gulp中：inject(gulp.src(['dist/**/*.js', 'dist/**/*.css'], {read: false},{starttag: '<!-- inject:dist:{{ext}} -->'}))中，
+//{starttag: '<!-- inject:dist:{{ext}} -->'}是自定义标签，inject是固定的。dist是指指定的文件名，不加则为所有。{{ext}}是指文件类型，
+//就写{{ext}}指所有类型，可写为css或js等，那就是指具体的类型了。2：html中：<!-- inject:dist:css --><!-- endinject -->写在head标签里，固定格式，只有
+//中间的dist是指文件名，可以不写，若写，则与gulp中文件名一致。<!-- inject:dist:js --><!-- endinject -->规则同上，只是写在body里。
+//html as target: <!-- {{name}}:{{ext}} -->
+//haml as target: -# {{name}}:{{ext}}
+//jade as target: //- {{name}}:{{ext}}
+//pug as target: //- {{name}}:{{ext}}
+//jsx as target: {/* {{name}}:{{ext}} */}
+//slm as target: / {{name}}:{{ext}}
+//less as target: /* {{name}}:{{ext}} */
+//sass, scss as target: /* {{name}}:{{ext}} */
 
 //gulp.task('default',['browserSync','scss','inject','watch']);//启动gulp时的默认任务
 gulp.task('default', sequence('browserSync','scss','inject','watch'));//默认任务
