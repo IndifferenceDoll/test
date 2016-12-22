@@ -22,10 +22,11 @@ gulp.task('scss', function () {//写一个scss命令
 
 gulp.task('watch',function(){//写一个监听命令
   return gulp.watch([//监听
-    './src/**/*.css',//被监听的文件
+    //'./src/**/*.css',//被监听的文件
+    './src/**/*.scss',//被监听的文件
     './src/**/*.html',//被监听的文件
     './src/**/*.js'//被监听的文件
-  ],['reload']);//监听后要执行的任务
+  ],['scss','inject','reload']);//监听后要执行的任务
 });
 
 gulp.task('browserSync',function(){//服务器和代理的命令
@@ -45,10 +46,10 @@ gulp.task('browserSync',function(){//服务器和代理的命令
       port: 9001//设置界面端口
     },
     files: [//监听，并刷新
-      './src/**/*.scss',//被监听的文件
-      //'./src/**/*.css',//被监听的文件
-      './src/**/*.html',//被监听的文件
-      './src/**/*.js'//被监听的文件
+      './dist/**/*.scss',//被监听的文件
+      //'./dist/**/*.css',//被监听的文件
+      './dist/**/*.html',//被监听的文件
+      './dist/**/*.js'//被监听的文件
     ],
     open: false//每次启动此任务是否打开新的浏览器页面
   });
