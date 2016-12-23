@@ -4,7 +4,7 @@
   "description": "test of jin",
   "main": "gulpfile.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack --config webpack.config.prod.js -p"
   },
   "author": "",
   "license": "ISC",
@@ -14,7 +14,9 @@
     "gulp-inject": "^4.2.0",
     "gulp-sass": "^3.0.0",
     "gulp-scss": "^1.4.0",
-    "gulp-sequence": "^0.4.6"
+    "gulp-sequence": "^0.4.6",
+    "gulp-webpack": "^1.5.0",
+    "webpack": "^1.14.0"
   },
   "dependencies": {
     "angular": "^1.6.0"
