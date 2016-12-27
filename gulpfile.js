@@ -11,7 +11,7 @@ var gulp = require('gulp'),
   sequence = require('gulp-sequence').use(gulp),//批量执行依赖任务，且按照参数中书写顺序
   browserSync = require('browser-sync'),//启动server或者proxy代理（解决本地跨域)。
   inject = require('gulp-inject'),//注入文件的插件
-  webpack = require('webpack');//webpack工具
+  json = require('./package.json');
 
 //gulp.task是书写命令，gulp.src是输入或针对某/某些文件，gulp.dest输出到指定文件，gulp.watch监听某/某些文件
 //return是为了有返回值，从而书写pipe管道函数
@@ -79,57 +79,13 @@ gulp.task('inject',function(){
 //slm as target: / {{name}}:{{ext}}
 //less as target: /* {{name}}:{{ext}} */
 //sass, scss as target: /* {{name}}:{{ext}} */
-gulp.task("webpack", function(callback) {
-  // run webpack
-  webpack({
-    //插件项
-    //plugins: [
-    //  //把指定文件夹下的文件复制到指定的目录
-    //  new TransferWebpackPlugin([
-    //    {from: 'www'}
-    //  ], path.resolve(__dirname,"src"))],
-    //页面入口文件配置
-    entry: {
-      index : './src/index.js'
-    },
-    //入口文件输出配置
-    output: {
-      path: './dist/js',
-      filename: 'index.js'
-    },
-    module: {
-      //加载器配置
-      loaders: [
-        //{ test: /\.css$/, loader: 'style-loader!css-loader' },
-        {
-          test: /\.js$/, // 匹配.js文件，如果通过则使用下面的loader
-          exclude: /node_modules/, // 排除node_modules文件夹
-          loader: 'babel', // 使用babel（babel-loader的简写）作为loader
-          query: {
-            presets: ['es2015']
-          }
-        },
-        { test: /\.scss$/, loader: 'scss!css!sass'},
-        { test: /\.(png|jpg)$/, loader: 'url-loader?limit=1024'}
-      ]
-    },
-    //其它解决方案配置
-    //resolve: {
-    //  root: 'E:/github/flux-example/src', //绝对路径
-    //  extensions: ['', '.js', '.json', '.scss'],
-    //  alias: {
-    //    AppStore : 'js/stores/AppStores.js',
-    //    ActionType : 'js/actions/ActionType.js',
-    //    AppAction : 'js/actions/AppAction.js'
-    //  }
-    //}
-  }, function(err, stats) {
-    if(err) throw new gutil.PluginError("webpack", err);
-    gutil.log("[webpack]", stats.toString({
-      // output options
-    }));
-    callback();
+
+gulp.task('extract',function(){
+  var depend = [];
+  Object.keys(json.dependencies).forEach(function(value){
+    depend.push('./node_modules/' + value + '/' + value + '.js');
   });
+  console.log(depend);
 });
 
 //gulp.task('default',['browserSync','scss','inject','watch']);//启动gulp时的默认任务
