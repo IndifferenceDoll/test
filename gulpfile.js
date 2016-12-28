@@ -11,7 +11,8 @@ var gulp = require('gulp'),
   sequence = require('gulp-sequence').use(gulp),//批量执行依赖任务，且按照参数中书写顺序
   browserSync = require('browser-sync'),//启动server或者proxy代理（解决本地跨域)。
   inject = require('gulp-inject'),//注入文件的插件
-  json = require('./package.json');
+  json = require('./package.json'),//获取package.json的文件对象
+  concat = require('gulp-concat');//连接文件
 
 //gulp.task是书写命令，gulp.src是输入或针对某/某些文件，gulp.dest输出到指定文件，gulp.watch监听某/某些文件
 //return是为了有返回值，从而书写pipe管道函数
@@ -27,7 +28,17 @@ gulp.task('watch',function(){//写一个监听命令
     './src/**/*.scss',//被监听的文件
     './src/**/*.html',//被监听的文件
     './src/**/*.js'//被监听的文件
-  ],['scss','inject','reload']);//监听后要执行的任务
+  ],
+    function(e){
+      sequence('scss','inject','reload')//监听后要执行的任务,通过sequence按顺序执行
+      (function (err) {//这个函数貌似是用来在出错时抛出错误的，但是经过尝试，如果不加这个函数，sequence无法正常运行
+        if (err) console.log(err)//如果出错，抛出错误的
+      });
+    });
+    //['scss','inject','reload'])//监听后要执行的任务
+    //.on('change',function(e){//执行回调函数
+    //    console.log(1111);
+    //  });
 });
 
 gulp.task('browserSync',function(){//服务器和代理的命令
@@ -46,12 +57,12 @@ gulp.task('browserSync',function(){//服务器和代理的命令
     ui: {//配套的官网写的设置界面（设置有限）
       port: 9001//设置界面端口
     },
-    files: [//监听，并刷新
-      './dist/**/*.scss',//被监听的文件
-      //'./dist/**/*.css',//被监听的文件
-      './dist/**/*.html',//被监听的文件
-      './dist/**/*.js'//被监听的文件
-    ],
+    //files: [//监听，并刷新
+    //  //'./dist/**/*.scss',//被监听的文件
+    //  './dist/**/*.css',//被监听的文件
+    //  './dist/**/*.html',//被监听的文件
+    //  './dist/**/*.js'//被监听的文件
+    //],
     open: false//每次启动此任务是否打开新的浏览器页面
   });
 });
@@ -80,13 +91,15 @@ gulp.task('inject',function(){
 //less as target: /* {{name}}:{{ext}} */
 //sass, scss as target: /* {{name}}:{{ext}} */
 
-gulp.task('extract',function(){
-  var depend = [];
-  Object.keys(json.dependencies).forEach(function(value){
-    depend.push('./node_modules/' + value + '/' + value + '.js');
+gulp.task('extract',function(){//用来抽取node——modules中外部依赖的项目并连接在一起，更名为common.js
+  var depend = [];//抽取项目的路径数组
+  Object.keys(json.dependencies).forEach(function(value){//遍历son中生产模式下依赖的项目所在的对象dependencies中各个属性的键名
+    depend.push('./node_modules/' + value + '/' + value + '.js');//并根据该键名生成路径，并添加到数组depend中
   });
-  console.log(depend);
+  return gulp.src(depend)//针对该数组中的文件路径操作
+    .pipe(concat('common.js'))//合并其中所有的文件并生成一个新文件common.js
+    .pipe(gulp.dest('./dist/js'));//将新文件common.js输出在./dist/js文件下
 });
 
 //gulp.task('default',['browserSync','scss','inject','watch']);//启动gulp时的默认任务
-gulp.task('default', sequence('browserSync','scss','inject','watch'));//默认任务
+gulp.task('default', sequence('scss','extract','inject','browserSync','watch'));//默认任务
