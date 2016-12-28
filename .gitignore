@@ -7,3 +7,4 @@ maps
 /dist.dev
 /dist.prod
 .project
+/dist

@@ -30,9 +30,9 @@ gulp.task('watch',function(){//写一个监听命令
     './src/**/*.js'//被监听的文件
   ],
     function(e){
-      sequence('scss','inject','reload')//监听后要执行的任务,通过sequence按顺序执行
-      (function (err) {//这个函数貌似是用来在出错时抛出错误的，但是经过尝试，如果不加这个函数，sequence无法正常运行
-        if (err) console.log(err)//如果出错，抛出错误的
+      sequence('scss','inject','reload')//监听后要执行的任务,通过sequence按顺序执行,然后返回一个必须执行的函数，该函数的参数是一个函数，如下
+      (function (err) {//这个参数函数是用来在出错时抛出错误的
+        if (err) console.log(err);//如果出错，抛出错误的
       });
     });
     //['scss','inject','reload'])//监听后要执行的任务
