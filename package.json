@@ -10,9 +10,11 @@
   "license": "ISC",
   "devDependencies": {
     "browser-sync": "^2.18.5",
+    "del": "^2.2.2",
     "gulp": "^3.9.1",
     "gulp-concat": "^2.6.1",
     "gulp-inject": "^4.2.0",
+    "gulp-order": "^1.1.1",
     "gulp-sass": "^3.0.0",
     "gulp-scss": "^1.4.0",
     "gulp-sequence": "^0.4.6",
@@ -20,6 +22,7 @@
     "webpack": "^1.14.0"
   },
   "dependencies": {
-    "angular": "^1.6.0"
+    "angular": "^1.6.0",
+    "bootstrap": "^3.3.7"
   }
 }
