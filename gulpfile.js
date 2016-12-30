@@ -7,14 +7,17 @@ var gulp = require('gulp'),
 // 后，可能依然启动不了gulp的服务，因为对方可能全局没有安装过gulp；只在项目中安装gulp，在命令行中只有cd到gulp目录下才能运行gulp命令，
 // 否则运行不了（使用webstom把目录定位到gulp文件的话也可以直接运行）。
 //  scss = require('gulp-scss'),//编译scss
-  sass = require('gulp-sass'),//编译sass
+  sass = require('gulp-sass'),//编译sass，sass({ outputStyle: 'compressed' })在编译之后就压缩css
   sequence = require('gulp-sequence').use(gulp),//批量执行依赖任务，且按照参数中书写顺序
   browserSync = require('browser-sync'),//启动server或者proxy代理（解决本地跨域)。
   inject = require('gulp-inject'),//注入文件的插件
   json = require('./package.json'),//获取package.json的文件对象
   concat = require('gulp-concat'),//连接文件
   del = require('del'),//删除文件
-  order = require('gulp-order');//文件排序
+  order = require('gulp-order'),//文件排序
+  uglify = require('gulp-uglify'),//js压缩混淆
+  minifycss = require('gulp-minify-css'),//css压缩
+  rev = require('gulp-rev');//版本号
 
 
 //生成开发环境的一系列命令及其步骤，生成生产环境时，也会征用其中一些命令
@@ -65,6 +68,7 @@ gulp.task('extractjs',function(){//用来抽取node——modules中外部依赖�
 
 gulp.task('compilejs', function () {//写一个compilejs命令,编译合并所有手写js
   return gulp.src('./src/**/*.js')
+  //return gulp.src(['./src/app.js','./src/**/module.js','./src/**/*.js'])
   //该任务针对的文件，使用angular时，合并文件需要遵循一定顺序规则，比如最大的module在最前面，接下来，所有小的module次之（小module之间
   // 无需顺序），剩下的随意。所以gulp.src('./src/**/*.js')可改为gulp.src(['./src/app.js','./src/**/module.js','./src/**/*.js']),
   //其中'./src/app.js'指的是最大的文件位置名字一开始就定死的module。
@@ -72,7 +76,7 @@ gulp.task('compilejs', function () {//写一个compilejs命令,编译合并所�
     .pipe(gulp.dest('./dist.dev/js')); //将会在dist.dev/js下生成app.js
 });
 
-gulp.task('inject',function(){
+gulp.task('inject-dev',function(){
   return gulp.src('./src/index.html')
     .pipe(inject(gulp.src(['./dist.dev/**/*.js', './dist.dev/**/*.css'], {read: false},{starttag: '<!-- inject:{{ext}} -->'}),
       { relative: false,ignorePath: 'dist.dev/', addRootSlash: false }))
@@ -131,7 +135,7 @@ gulp.task('watch',function(){//写一个监听命令
     './src/**/*.js'//被监听的文件
   ],
     function(e){
-      sequence('scss','extract','compilejs','inject','reload')//监听后要执行的任务,通过sequence按顺序执行,然后返回一个必须执行的函数，该函数的参数是一个函数，如下
+      sequence('scss','extractcss','extractjs','compilejs','inject','reload')//监听后要执行的任务,通过sequence按顺序执行,然后返回一个必须执行的函数，该函数的参数是一个函数，如下
       (function (err) {//这个参数函数是用来在出错时抛出错误的
         if (err) console.log(err);//如果出错，抛出错误的
       });
@@ -148,6 +152,38 @@ gulp.task('clean-pro',function(cb){//删除文件夹或文件
   return del(['./dist.pro'],cb);//所删除文件路径，及回调函数
 });
 
+gulp.task('minify-uglify-rev',function(){//混淆压缩的命令
+  gulp.src('./dist.dev/js/*.js')//针对文件
+    .pipe(concat('app.min.js'))//连接并更名
+    .pipe(uglify({//混淆
+      mangle: {except: ['require' ,'exports' ,'module' ,'$']},//排除混淆关键字,默认：true 是否修改变量名
+      compress: true,//类型：Boolean 默认：true 是否完全压缩，若想完全压缩，则无法保留注释
+      //preserveComments: 'all' //保留所有注释,若保留注释，则无法完全压缩
+    }))
+    .pipe(rev())//打上版本号
+    .pipe(gulp.dest('./dist.pro/js'));//输出到文件夹
+});
+
+gulp.task('minifycss-rev',function(){//压缩css的命令
+  gulp.src('./dist.dev/css/*.css')//针对文件
+    .pipe(concat('app.min.css'))//连接并更名
+    .pipe(minifycss())//压缩css
+    .pipe(rev())//打上版本号
+    .pipe(gulp.dest('./dist.pro/css'));//输出到文件夹
+});
+
+gulp.task('inject-pro',function(){
+  return gulp.src('./src/index.html')
+    .pipe(inject(gulp.src(['./dist.pro/js/*.min.js', './dist.pro/css/*.min.css'], {read: false},{starttag: '<!-- inject:{{ext}} -->'}),
+      { relative: false,ignorePath: 'dist.pro/', addRootSlash: false }))
+    .pipe(gulp.dest('./dist.pro'));
+});
+
 //gulp.task('default',[...任务名...]);//启动gulp时的默认任务
 //gulp.task('default',sequence(...任务名...));//启动gulp时的默认任务,按照顺序呢
-gulp.task('build-dev', sequence('clean-dev','scss','extractcss','extractjs','compilejs','inject','browserSync','watch'));//构建开发环境下的包
+gulp.task('build-dev', sequence('clean-dev','scss','extractcss','extractjs','compilejs','inject-dev','browserSync','watch'));//构建开发环境下的包
+//'clean-dev'清除包  'scss'编译手写样式并连接起来  'extractcss'抽取外部依赖样式并连接起来 'extractjs'抽取外部依赖js并连接起来
+//'compilejs'编译手写js并连接起来 'inject'将生成的js和css注入index.html 'browserSync'启动服务 'watch'监听src下文件，然后按顺序sequence('scss','extract','compilejs','inject','reload')并刷新
+gulp.task('build-pro', sequence('clean-dev','clean-pro','scss','extractcss','extractjs','compilejs','minify-uglify-rev','minifycss-rev','inject-dev','inject-pro'));//构建生产环境下的包
+//sequence('clean-dev','clean-pro','scss','extractcss','extractjs','compilejs','minify-uglify-rev','minifycss-rev','inject-dev','inject-pro')中最后的inject-pro与
+//minify-uglify-rev和minifycss-rev中间必须隔一个任务，否则会导致inject-pro任务执行失败
