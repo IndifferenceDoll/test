@@ -78,7 +78,7 @@ gulp.task('compilejs', function () {//写一个compilejs命令,编译合并所�
 
 gulp.task('inject-dev',function(){
   return gulp.src('./src/index.html')
-    .pipe(inject(gulp.src(['./dist.dev/**/*.js', './dist.dev/**/*.css'], {read: false},{starttag: '<!-- inject:{{ext}} -->'}),
+    .pipe(inject(gulp.src(['./dist.dev/**/common.js', './dist.dev/**/common.css','./dist.dev/**/*.js', './dist.dev/**/*.css'], {read: false},{starttag: '<!-- inject:{{ext}} -->'}),
       { relative: false,ignorePath: 'dist.dev/', addRootSlash: false }))
     .pipe(gulp.dest('./dist.dev'));
 });
@@ -135,7 +135,7 @@ gulp.task('watch',function(){//写一个监听命令
     './src/**/*.js'//被监听的文件
   ],
     function(e){
-      sequence('scss','extractcss','extractjs','compilejs','inject','reload')//监听后要执行的任务,通过sequence按顺序执行,然后返回一个必须执行的函数，该函数的参数是一个函数，如下
+      sequence('scss','extractcss','extractjs','compilejs','inject-dev','reload')//监听后要执行的任务,通过sequence按顺序执行,然后返回一个必须执行的函数，该函数的参数是一个函数，如下
       (function (err) {//这个参数函数是用来在出错时抛出错误的
         if (err) console.log(err);//如果出错，抛出错误的
       });
@@ -153,7 +153,7 @@ gulp.task('clean-pro',function(cb){//删除文件夹或文件
 });
 
 gulp.task('minify-uglify-rev',function(){//混淆压缩的命令
-  gulp.src('./dist.dev/js/*.js')//针对文件
+  gulp.src('./dist.dev/js/common.js','./dist.dev/js/*.js')//针对文件
     .pipe(concat('app.min.js'))//连接并更名
     .pipe(uglify({//混淆
       mangle: {except: ['require' ,'exports' ,'module' ,'$']},//排除混淆关键字,默认：true 是否修改变量名
@@ -165,7 +165,7 @@ gulp.task('minify-uglify-rev',function(){//混淆压缩的命令
 });
 
 gulp.task('minifycss-rev',function(){//压缩css的命令
-  gulp.src('./dist.dev/css/*.css')//针对文件
+  gulp.src('./dist.dev/css/common.css','./dist.dev/css/*.css')//针对文件
     .pipe(concat('app.min.css'))//连接并更名
     .pipe(minifycss())//压缩css
     .pipe(rev())//打上版本号
