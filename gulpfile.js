@@ -181,6 +181,7 @@ gulp.task('inject-pro',function(){
 
 //gulp.task('default',[...任务名...]);//启动gulp时的默认任务
 //gulp.task('default',sequence(...任务名...));//启动gulp时的默认任务,按照顺序呢
+//noinspection Eslint
 gulp.task('build-dev', sequence('clean-dev','scss','extractcss','extractjs','compilejs','inject-dev','browserSync','watch'));//构建开发环境下的包
 //'clean-dev'清除包  'scss'编译手写样式并连接起来  'extractcss'抽取外部依赖样式并连接起来 'extractjs'抽取外部依赖js并连接起来
 //'compilejs'编译手写js并连接起来 'inject'将生成的js和css注入index.html 'browserSync'启动服务 'watch'监听src下文件，然后按顺序sequence('scss','extract','compilejs','inject','reload')并刷新

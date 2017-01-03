@@ -1,0 +1,32 @@
+{
+  "env": {
+    "browser": true
+    //    "commonjs": true,
+    //    "es6": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 5
+  },
+  "globals": {
+    "angular": true
+  },
+  "plugins": [
+    "angular"
+  ],
+  "rules": {
+    "curly": 2,//花括号，必须有
+    "comma-style": [2, "last"],//逗号必须在行尾
+    "brace-style": [2, "1tbs", { "allowSingleLine": true }],//if while function 后面的{必须与if在同一行，java风格
+    "quotes": [2, "single"],//必须使用单引号
+    "semi": [2, "always"],//必须使用分号
+    "object-curly-spacing": [2, "always"],//对象括号必须用空格
+    "array-bracket-spacing": [2, "never"],//数组括号不能加空格
+    "space-infix-ops": 2,//操作符两边加空格
+    "angular/controller-name": 2
+//    "angular/directive-name":[2, "ps"],
+//    "angular/file-name": [2,{"typeSeparator":"dot","ignoreTypeSuffix":true}],
+//    "angular/no-services": 2,
+//    "angular/no-run-logic": 2
+//    "angular/on-watch": 2
+  }
+}
