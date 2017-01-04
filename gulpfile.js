@@ -18,7 +18,11 @@ var gulp = require('gulp'),
   uglify = require('gulp-uglify'),//js压缩混淆
   minifycss = require('gulp-minify-css'),//css压缩
   rev = require('gulp-rev'),//版本号
-  babel = require('gulp-babel');//巴贝尔，配合babel-preset-es2015可以转换js语法类型
+  babel = require('gulp-babel'),//巴贝尔，配合babel-preset-es2015可以转换js语法类型
+  imagemin = require('gulp-imagemin'),//图片压缩
+  pngquant = require('imagemin-pngquant'),//深度压缩
+  cache = require('gulp-cache'),//获取缓存
+  base64 = require('gulp-base64');//图片路径转base64
 
 //生成开发环境的一系列命令及其步骤，生成生产环境时，也会征用其中一些命令
 
@@ -30,7 +34,15 @@ gulp.task('clean-dev', function (cb) {//删除文件夹或文件
 });
 
 gulp.task('images-dev', function () {//对图片做处理，并移动到其他地方
-  return gulp.src(['./src/images/**/*.jpg', './src/images/**/*.png', './src/images/**/*.svg', './src/images/**/*.gif'])
+  return gulp.src('./src/images/**/*.{jpg,png,svg,gif,ico}')
+    .pipe(cache(imagemin({//缓存中取未被修改图片，并压缩
+      optimizationLevel: 5, //类型：Number  默认：3  取值范围：0-7（优化等级）
+      progressive: true, //类型：Boolean 默认：false 无损压缩jpg图片
+      interlaced: true, //类型：Boolean 默认：false 隔行扫描gif进行渲染
+      multipass: true, //类型：Boolean 默认：false 多次优化svg直到完全优化
+      svgoPlugins: [{ removeViewBox: false }],//不要移除svg的viewbox属性
+      use: [pngquant()] //使用pngquant深度压缩png图片的imagemin插件
+    })))
     .pipe(gulp.dest('./dist.dev/images'));
 });
 
@@ -162,8 +174,13 @@ gulp.task('clean-pro', function (cb) {//删除文件夹或文件
   return del(['./dist.pro'], cb);//所删除文件路径，及回调函数
 });
 
+gulp.task('images-pro', function () {//对图片做处理，并移动到其他地方
+  return gulp.src('./src/images/**/*.{jpg,png,svg,gif,ico}')
+    .pipe(gulp.dest('./dist.pro/images'));
+});
+
 gulp.task('minify-uglify-rev', function () {//混淆压缩的命令
-  gulp.src('./dist.dev/js/common.js', './dist.dev/js/*.js')//针对文件
+  gulp.src(['./dist.dev/js/common.js', './dist.dev/js/app.js', './dist.dev/js/*.js'])//针对文件
     .pipe(concat('app.min.js'))//连接并更名
     .pipe(uglify({//混淆
       mangle: { except: ['require', 'exports', 'module', '$'] },//排除混淆关键字,默认：true 是否修改变量名
@@ -174,15 +191,15 @@ gulp.task('minify-uglify-rev', function () {//混淆压缩的命令
     .pipe(gulp.dest('./dist.pro/js'));//输出到文件夹
 });
 
-gulp.task('images-pro', function () {//对图片做处理，并移动到其他地方
-  return gulp.src(['./dist.dev/images/**/*.jpg', './dist.dev/images/**/*.png', './dist.dev/images/**/*.svg', './dist.dev/images/**/*.gif'])
-    //在这里可对图片做处理，比如可以精灵雪碧
-    .pipe(gulp.dest('./dist.pro/images'));
-});
-
 gulp.task('minifycss-rev', function () {//压缩css的命令
-  gulp.src('./dist.dev/css/common.css', './dist.dev/css/*.css')//针对文件
+  gulp.src(['./dist.dev/css/common.css', './dist.dev/css/app.css', './dist.dev/css/*.css'])//针对文件
     .pipe(concat('app.min.css'))//连接并更名
+    .pipe(base64({//将css中图片地址转为base64
+      baseDir: './dist.dev',
+      extensions: ['png','jpg','png','svg','gif','ico'],
+      maxImageSize: 20 * 1024, // bytes
+      debug: false
+    }))//转为base64
     .pipe(minifycss())//压缩css
     .pipe(rev())//打上版本号
     .pipe(gulp.dest('./dist.pro/css'));//输出到文件夹
