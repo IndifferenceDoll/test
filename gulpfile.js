@@ -22,7 +22,8 @@ var gulp = require('gulp'),
   imagemin = require('gulp-imagemin'),//图片压缩
   pngquant = require('imagemin-pngquant'),//深度压缩
   cache = require('gulp-cache'),//获取缓存
-  base64 = require('gulp-base64');//图片路径转base64
+  base64 = require('gulp-base64'),//图片路径转base64
+  htmlmin = require('gulp-htmlmin');//html压缩
 
 //生成开发环境的一系列命令及其步骤，生成生产环境时，也会征用其中一些命令
 
@@ -205,10 +206,20 @@ gulp.task('minifycss-rev', function () {//压缩css的命令
     .pipe(gulp.dest('./dist.pro/css'));//输出到文件夹
 });
 
-gulp.task('inject-pro', function () {
+gulp.task('inject-pro', function () {//css、js注入html
   return gulp.src('./src/index.html')
     .pipe(inject(gulp.src(['./dist.pro/js/*.min.js', './dist.pro/css/*.min.css'], { read: false }, { starttag: '<!-- inject:{{ext}} -->' }),
       { relative: false, ignorePath: 'dist.pro/', addRootSlash: false }))
+    .pipe(htmlmin({//压缩html
+      collapseWhitespace:true,
+      collapseBooleanAttributes:true,
+      removeComments:true,
+      removeEmptyAttributes:true,
+      removeScriptTypeAttributes:true,
+      removeStyleLinkTypeAttributes:true,
+      minifyJS:true,
+      minifyCSS:true
+    }))
     .pipe(gulp.dest('./dist.pro'));
 });
 
