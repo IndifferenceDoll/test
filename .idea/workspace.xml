@@ -4,7 +4,6 @@
     <list default="true" id="615f3a2a-61ca-4bcb-af3b-e022abbc21c1" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gulpfile.js" afterPath="$PROJECT_DIR$/gulpfile.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package.json" afterPath="$PROJECT_DIR$/package.json" />
     </list>
     <ignored path="test.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -38,8 +37,8 @@
       <file leaf-file-name="gulpfile.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gulpfile.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="1.7986348">
-              <caret line="248" column="29" selection-start-line="248" selection-start-column="29" selection-end-line="248" selection-end-column="29" />
+            <state vertical-scroll-proportion="0.44709897">
+              <caret line="235" column="20" selection-start-line="235" selection-start-column="20" selection-end-line="235" selection-end-column="20" />
               <folding />
             </state>
           </provider>
@@ -466,7 +465,13 @@
       <option name="project" value="LOCAL" />
       <updated>1483522215626</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="feature:zip,ftp">
+      <created>1483584685282</created>
+      <option name="number" value="00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1483584685282</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TodoView">
@@ -527,7 +532,8 @@
     <MESSAGE value="feature:es6" />
     <MESSAGE value="feature:图片转base64" />
     <MESSAGE value="feature:htmlmin" />
-    <option name="LAST_COMMIT_MESSAGE" value="feature:htmlmin" />
+    <MESSAGE value="feature:zip,ftp" />
+    <option name="LAST_COMMIT_MESSAGE" value="feature:zip,ftp" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -888,8 +894,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/gulpfile.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.7986348">
-          <caret line="248" column="29" selection-start-line="248" selection-start-column="29" selection-end-line="248" selection-end-column="29" />
+        <state vertical-scroll-proportion="0.44709897">
+          <caret line="235" column="20" selection-start-line="235" selection-start-column="20" selection-end-line="235" selection-end-column="20" />
           <folding />
         </state>
       </provider>

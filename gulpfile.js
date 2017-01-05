@@ -233,7 +233,7 @@ gulp.task('build-dev', sequence('clean-dev', 'images-dev', 'scss', 'extractcss',
 //'compilejs'编译手写js并连接起来 'inject'将生成的js和css注入index.html 'browserSync'启动服务 'watch'监听src下文件，然后按顺序sequence('scss','extract','compilejs','inject','reload')并刷新
 gulp.task('build-pro', sequence('clean-dev', 'clean-pro', 'images-dev', 'scss', 'extractcss', 'extractjs', 'compilejs', 'images-pro', 'minify-uglify-rev', 'minifycss-rev', 'inject-dev', 'inject-pro'));//构建生产环境下的包
 //sequence('clean-dev','clean-pro','scss','extractcss','extractjs','compilejs','minify-uglify-rev','minifycss-rev','inject-dev','inject-pro')中最后的inject-pro与
-//minify-uglify-rev和minifycss-rev中间必须隔一个任务，否则会导致inject-pro任务执行失败
+//minify-uglify-rev、minifycss-rev中间必须隔一个任务，否则会导致inject-pro任务执行失败
 
 gulp.task('clean-zip', (cb) => {//删除文件夹或文件
   return del(['./test.zip'], cb);//所删除文件路径，及回调函数
