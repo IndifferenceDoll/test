@@ -23,18 +23,20 @@ var gulp = require('gulp'),
   pngquant = require('imagemin-pngquant'),//深度压缩
   cache = require('gulp-cache'),//获取缓存
   base64 = require('gulp-base64'),//图片路径转base64
-  htmlmin = require('gulp-htmlmin');//html压缩
+  htmlmin = require('gulp-htmlmin'),//html压缩
+  zip = require('gulp-zip'),//压缩打包zip
+  ftp = require('gulp-ftp');//ftp发送zip
 
 //生成开发环境的一系列命令及其步骤，生成生产环境时，也会征用其中一些命令
 
 gulp.task('default', []);
 gulp.task('clean-all', ['clean-dev', 'clean-pro']);//删除所有生成文件夹或文件
 
-gulp.task('clean-dev', function (cb) {//删除文件夹或文件
+gulp.task('clean-dev', (cb) => {//删除文件夹或文件
   return del(['./dist.dev'], cb);//所删除文件路径，及回调函数
 });
 
-gulp.task('images-dev', function () {//对图片做处理，并移动到其他地方
+gulp.task('images-dev', () => {//对图片做处理，并移动到其他地方
   return gulp.src('./src/images/**/*.{jpg,png,svg,gif,ico}')
     .pipe(cache(imagemin({//缓存中取未被修改图片，并压缩
       optimizationLevel: 5, //类型：Number  默认：3  取值范围：0-7（优化等级）
@@ -49,16 +51,16 @@ gulp.task('images-dev', function () {//对图片做处理，并移动到其他�
 
 //gulp.task是书写命令，gulp.src是输入或针对某/某些文件，gulp.dest输出到指定文件，gulp.watch监听某/某些文件
 //return是为了有返回值，从而书写pipe管道函数
-gulp.task('scss', function () {//写一个scss命令,编译所有手写的样式,后期可以修改为所有手写的都@import引入最终的scss里，在编译最终的scss
+gulp.task('scss', () => {//写一个scss命令,编译所有手写的样式,后期可以修改为所有手写的都@import引入最终的scss里，在编译最终的scss
   return gulp.src('./src/**/*.scss') //该任务针对的文件
     .pipe(sass()) //该任务调用的模块
     .pipe(concat('app.css'))//合并其中所有的文件并生成一个新文件app.css,如果用@import去引到一个scss里，基本可以省掉合并的这一步
     .pipe(gulp.dest('./dist.dev/css')); //将会在dist.dev/css下生成app.css
 });
 
-gulp.task('extractcss', function () {//用来抽取node——modules中外部依赖的项目并连接在一起，更名为common.css
+gulp.task('extractcss', () => {//用来抽取node——modules中外部依赖的项目并连接在一起，更名为common.css
   var depend = [];//抽取项目的路径数组
-  Object.keys(json.dependencies).forEach(function (value) {//遍历son中生产模式下依赖的项目所在的对象dependencies中各个属性的键名
+  Object.keys(json.dependencies).forEach( (value) => {//遍历son中生产模式下依赖的项目所在的对象dependencies中各个属性的键名
     depend.push('./node_modules/' + value + '/' + value + '.css');//并根据该键名生成路径，并添加到数组depend中
     depend.push('./node_modules/' + value + '/dist/css/' + value + '.css');//并根据该键名生成路径，并添加到数组depend中
   });
@@ -70,9 +72,9 @@ gulp.task('extractcss', function () {//用来抽取node——modules中外部依
     .pipe(gulp.dest('./dist.dev/css'));//将新文件common.js输出在./dist.dev/css文件下
 });
 
-gulp.task('extractjs', function () {//用来抽取node——modules中外部依赖的项目并连接在一起，更名为common.js
+gulp.task('extractjs', () => {//用来抽取node——modules中外部依赖的项目并连接在一起，更名为common.js
   var depend = [];//抽取项目的路径数组
-  Object.keys(json.dependencies).forEach(function (value) {//遍历son中生产模式下依赖的项目所在的对象dependencies中各个属性的键名
+  Object.keys(json.dependencies).forEach( (value) => {//遍历son中生产模式下依赖的项目所在的对象dependencies中各个属性的键名
     depend.push('./node_modules/' + value + '/' + value + '.js');//并根据该键名生成路径，并添加到数组depend中
     depend.push('./node_modules/' + value + '/dist/' + value + '.js');//并根据该键名生成路径，并添加到数组depend中
   });
@@ -84,7 +86,7 @@ gulp.task('extractjs', function () {//用来抽取node——modules中外部依�
     .pipe(gulp.dest('./dist.dev/js'));//将新文件common.js输出在./dist.dev/js文件下
 });
 
-gulp.task('compilejs', function () {//写一个compilejs命令,编译合并所有手写js
+gulp.task('compilejs', () => {//写一个compilejs命令,编译合并所有手写js
   return gulp.src('./src/**/*.js')
     //return gulp.src(['./src/app.js','./src/**/module.js','./src/**/*.js'])
     //该任务针对的文件，使用angular时，合并文件需要遵循一定顺序规则，比如最大的module在最前面，接下来，所有小的module次之（小module之间
@@ -97,7 +99,7 @@ gulp.task('compilejs', function () {//写一个compilejs命令,编译合并所�
     .pipe(gulp.dest('./dist.dev/js')); //将会在dist.dev/js下生成app.js
 });
 
-gulp.task('inject-dev', function () {
+gulp.task('inject-dev', () => {
   return gulp.src('./src/index.html')
     .pipe(inject(gulp.src(['./dist.dev/**/common.js', './dist.dev/**/common.css', './dist.dev/**/*.js', './dist.dev/**/*.css'], { read: false }, { starttag: '<!-- inject:{{ext}} -->' }),
       { relative: false, ignorePath: 'dist.dev/', addRootSlash: false }))
@@ -118,7 +120,7 @@ gulp.task('inject-dev', function () {
 //less as target: /* {{name}}:{{ext}} */
 //sass, scss as target: /* {{name}}:{{ext}} */
 
-gulp.task('browserSync', function () {//服务器和代理的命令
+gulp.task('browserSync', () => {//服务器和代理的命令
   browserSync.init({//browserSync的初始化的配置
     server: {//server对象
       baseDir: './dist.dev',//要启动文件的目录
@@ -144,20 +146,20 @@ gulp.task('browserSync', function () {//服务器和代理的命令
   });
 });
 
-gulp.task('reload', function () {//浏览器重载，刷新
+gulp.task('reload', () => {//浏览器重载，刷新
   browserSync.reload();//重载刷新的方法
 });
 
-gulp.task('watch', function () {//写一个监听命令
+gulp.task('watch', () => {//写一个监听命令
   return gulp.watch([//监听
       //'./src/**/*.css',//被监听的文件
       './src/**/*.scss',//被监听的文件
       './src/**/*.html',//被监听的文件
       './src/**/*.js'//被监听的文件
     ],
-    function (e) {
+    (e) => {
       sequence('scss', 'extractcss', 'extractjs', 'compilejs', 'inject-dev', 'reload')//监听后要执行的任务,通过sequence按顺序执行,然后返回一个必须执行的函数，该函数的参数是一个函数，如下
-      (function (err) {//这个参数函数是用来在出错时抛出错误的
+      ( (err) => {//这个参数函数是用来在出错时抛出错误的
         if (err) {
           console.log(err);
         }//如果出错，抛出错误的
@@ -171,16 +173,16 @@ gulp.task('watch', function () {//写一个监听命令
 
 //生成生产环境的一系列命令及其步骤，会征用开发环境中的命令
 
-gulp.task('clean-pro', function (cb) {//删除文件夹或文件
+gulp.task('clean-pro', (cb) => {//删除文件夹或文件
   return del(['./dist.pro'], cb);//所删除文件路径，及回调函数
 });
 
-gulp.task('images-pro', function () {//对图片做处理，并移动到其他地方
+gulp.task('images-pro', () => {//对图片做处理，并移动到其他地方
   return gulp.src('./src/images/**/*.{jpg,png,svg,gif,ico}')
     .pipe(gulp.dest('./dist.pro/images'));
 });
 
-gulp.task('minify-uglify-rev', function () {//混淆压缩的命令
+gulp.task('minify-uglify-rev', () => {//混淆压缩的命令
   gulp.src(['./dist.dev/js/common.js', './dist.dev/js/app.js', './dist.dev/js/*.js'])//针对文件
     .pipe(concat('app.min.js'))//连接并更名
     .pipe(uglify({//混淆
@@ -192,7 +194,7 @@ gulp.task('minify-uglify-rev', function () {//混淆压缩的命令
     .pipe(gulp.dest('./dist.pro/js'));//输出到文件夹
 });
 
-gulp.task('minifycss-rev', function () {//压缩css的命令
+gulp.task('minifycss-rev', () => {//压缩css的命令
   gulp.src(['./dist.dev/css/common.css', './dist.dev/css/app.css', './dist.dev/css/*.css'])//针对文件
     .pipe(concat('app.min.css'))//连接并更名
     .pipe(base64({//将css中图片地址转为base64
@@ -206,7 +208,7 @@ gulp.task('minifycss-rev', function () {//压缩css的命令
     .pipe(gulp.dest('./dist.pro/css'));//输出到文件夹
 });
 
-gulp.task('inject-pro', function () {//css、js注入html
+gulp.task('inject-pro', () => {//css、js注入html
   return gulp.src('./src/index.html')
     .pipe(inject(gulp.src(['./dist.pro/js/*.min.js', './dist.pro/css/*.min.css'], { read: false }, { starttag: '<!-- inject:{{ext}} -->' }),
       { relative: false, ignorePath: 'dist.pro/', addRootSlash: false }))
@@ -232,3 +234,28 @@ gulp.task('build-dev', sequence('clean-dev', 'images-dev', 'scss', 'extractcss',
 gulp.task('build-pro', sequence('clean-dev', 'clean-pro', 'images-dev', 'scss', 'extractcss', 'extractjs', 'compilejs', 'images-pro', 'minify-uglify-rev', 'minifycss-rev', 'inject-dev', 'inject-pro'));//构建生产环境下的包
 //sequence('clean-dev','clean-pro','scss','extractcss','extractjs','compilejs','minify-uglify-rev','minifycss-rev','inject-dev','inject-pro')中最后的inject-pro与
 //minify-uglify-rev和minifycss-rev中间必须隔一个任务，否则会导致inject-pro任务执行失败
+
+gulp.task('clean-zip', (cb) => {//删除文件夹或文件
+  return del(['./test.zip'], cb);//所删除文件路径，及回调函数
+});
+
+gulp.task('zip',['clean-zip'], () => {//打包压缩zip
+  gulp.src('./dist.pro/**/*')//要打包的文件夹或文件
+    .pipe(zip('test.zip'))//打包并生成的名字
+    .pipe(gulp.dest('./'));//将打包后的文件输出位置
+});
+
+gulp.task('ftp', () => {//ftp发送zip文件到服务器
+  return gulp.src('./test.zip')
+    .pipe(ftp({
+      host: '',//服务器地址(必须)
+      port: 80,//服务器端口(必须)
+      remotePath: '',//对应的服务器文件地址(必须)
+      //user: 'anonymous',//ftp账户(必须),如果FTP没有访问限制，可以不填
+      //pass:null,//ftp账户密码(必须),如果FTP没有访问限制，可以不填
+      //logger:'',//输出文件列表名称,默认在项目根目录生成文件(可选,默认：logger.txt)
+      //froot:'',//提单文件前缀(可选，默认：/usr/local/imgcache/htdocs)
+      //exp:null,//体验环境地址(可选，默认null)
+      //pro:null//正式环境地址(可选，默认null)
+}));
+});
