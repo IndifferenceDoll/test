@@ -21,11 +21,39 @@ var gulp = require('gulp'),
   babel = require('gulp-babel'),//巴贝尔，配合babel-preset-es2015可以转换js语法类型
   imagemin = require('gulp-imagemin'),//图片压缩
   pngquant = require('imagemin-pngquant'),//深度压缩
-  cache = require('gulp-cache'),//获取缓存
+  cache = require('gulp-cache'),//获取缓存,图片快取
   base64 = require('gulp-base64'),//图片路径转base64
   htmlmin = require('gulp-htmlmin'),//html压缩
   zip = require('gulp-zip'),//压缩打包zip
-  ftp = require('gulp-ftp');//ftp发送zip
+  ftp = require('gulp-ftp'),//ftp发送zip
+  autoprefixer = require('gulp-autoprefixer'),//浏览器前缀
+  gulpif = require('gulp-if'),//用来判断
+  plumber = require('gulp-plumber'),//管道工，使任务出错时不中断
+  size = require('gulp-size');//显示文件大小
+//plugins = require('gulp-load-plugins')();//自动加载，自动加载所有package.json中devDependencies对象里的依赖,使用插件时调用
+
+////plugins.XX就可以使用。（XX指的是gulp-后面的名字）,使用gulp-load-plugins后，值需要引gulp就可以，不需要再像上面一样一个一个引
+
+//gulp-sourcemaps 当压缩的JS出错，能根据这个找到未压缩代码的位置 不会一片混乱代码
+
+//gulp-useref 将html引用顺序的CSS JS 变成一个文件例如：
+// <!-- build:js scripts/main.js --> <script src="1.js"></script><script src="2.js"></script><!--endbuild--> 最后变成<script src="main.js"></script>
+
+//gulp-filter可以把stream里的文件根据一定的规则进行筛选过滤。比如gulp.src中传入匹配符匹配了很多文件，可以把这些文件pipe给gulp-filter作二次筛选，
+// 如gulp.src('**/*.js').pipe($.filter(**/a/*.js))，本来选中了所有子文件下的js文件，经过筛选后变成名为a的子文件夹下的js文件。
+// 那有人要问了，为什么不直接将需要的筛选传入gulp.src，干嘛要多筛选一步呢？这里面有两种情况：gulp.src与$.filter中间可能需要别的处理，
+// 比如我对所有文件做了操作1以后，还需要筛选出一部分做操作2。
+//第二种情况就要谈到gulp-filter的另外一个特性：筛选之后还可以restore回去。比如我对所有文件做了操作1，筛选了一部分做操作2，
+// 最后要把所有的文件都拷贝到最终的位置。代码如下：
+//var filter = $.filter('**/a/*.js');
+//gulp.src('**/*.js')
+//  .pipe(action1())
+//  .pipe(filter)
+//  .pipe(action2())
+//  .pipe(filter.restore())
+//  .pipe(gulp.dest('dist'))
+//可以看到，如果没有restore这个操作，那么拷贝到最终位置的文件将只包含被过滤出来的文件，这样一restore，所有的文件都被拷贝了。
+
 
 //生成开发环境的一系列命令及其步骤，生成生产环境时，也会征用其中一些命令
 
@@ -38,6 +66,19 @@ gulp.task('clean-dev', (cb) => {//删除文件夹或文件
 
 gulp.task('images-dev', () => {//对图片做处理，并移动到其他地方
   return gulp.src('./src/images/**/*.{jpg,png,svg,gif,ico}')
+    .pipe(plumber({
+      errorHandler: (err) => {
+        gutil.beep();
+        gutil.log(err.toString());
+      }
+    }))//任务出错不中断
+    .pipe(size({
+      title: '图片压缩前',
+      gzip:true,
+      pretty:true,
+      showFiles:true,
+      showTotal:true
+    }))
     .pipe(cache(imagemin({//缓存中取未被修改图片，并压缩
       optimizationLevel: 5, //类型：Number  默认：3  取值范围：0-7（优化等级）
       progressive: true, //类型：Boolean 默认：false 无损压缩jpg图片
@@ -46,6 +87,13 @@ gulp.task('images-dev', () => {//对图片做处理，并移动到其他地方
       svgoPlugins: [{ removeViewBox: false }],//不要移除svg的viewbox属性
       use: [pngquant()] //使用pngquant深度压缩png图片的imagemin插件
     })))
+    .pipe(size({
+      title: '图片压缩后',
+      gzip:true,
+      pretty:true,
+      showFiles:true,
+      showTotal:true
+    }))
     .pipe(gulp.dest('./dist.dev/images'));
 });
 
@@ -53,36 +101,103 @@ gulp.task('images-dev', () => {//对图片做处理，并移动到其他地方
 //return是为了有返回值，从而书写pipe管道函数
 gulp.task('scss', () => {//写一个scss命令,编译所有手写的样式,后期可以修改为所有手写的都@import引入最终的scss里，在编译最终的scss
   return gulp.src('./src/**/*.scss') //该任务针对的文件
-    .pipe(sass()) //该任务调用的模块
+    .pipe(plumber({
+      errorHandler: (err) => {
+        gutil.beep();
+        gutil.log(err.toString());
+      }
+    }))//任务出错不中断
+    .pipe(size({
+      title: '手动css合并编译前',
+      gzip:true,
+      pretty:true,
+      showFiles:true,
+      showTotal:true
+    }))
+    .pipe(gulpif(true, sass()))//该任务调用的模块,这里的gulpif是一个简单的示例，里面还可以写路径文件的字符串，例如'./src/**/*.scss'
     .pipe(concat('app.css'))//合并其中所有的文件并生成一个新文件app.css,如果用@import去引到一个scss里，基本可以省掉合并的这一步
+    .pipe(autoprefixer({//属性加前缀
+      browsers: ['last 2 versions'],
+      cascade: true, //是否美化属性值 默认：true 像这样：
+      //-webkit-transform: rotate(45deg);
+      //        transform: rotate(45deg);
+      remove: true //是否去掉不必要的前缀 默认：true
+    }))
+    .pipe(size({
+      title: '手动css合并编译加前缀后',
+      gzip:true,
+      pretty:true,
+      showFiles:true,
+      showTotal:true
+    }))
     .pipe(gulp.dest('./dist.dev/css')); //将会在dist.dev/css下生成app.css
 });
 
 gulp.task('extractcss', () => {//用来抽取node——modules中外部依赖的项目并连接在一起，更名为common.css
   var depend = [];//抽取项目的路径数组
-  Object.keys(json.dependencies).forEach( (value) => {//遍历son中生产模式下依赖的项目所在的对象dependencies中各个属性的键名
+  Object.keys(json.dependencies).forEach((value) => {//遍历son中生产模式下依赖的项目所在的对象dependencies中各个属性的键名
     depend.push('./node_modules/' + value + '/' + value + '.css');//并根据该键名生成路径，并添加到数组depend中
     depend.push('./node_modules/' + value + '/dist/css/' + value + '.css');//并根据该键名生成路径，并添加到数组depend中
   });
   //上面的地址有可能因为包作者的地址存放习惯而不准，因此需要检查实际包地址进行修改或添加上面的地址
   //上面的这一步会生成很多空地址，这里需要有更好的方法能准确的找到依赖的包（所幸下面的concat方法合并所有地址下的文件，可以排掉空地址）
   return gulp.src(depend)//针对该数组中的文件路径操作,按照顺序处理，即按照json.dependencies里的顺序
+    .pipe(plumber({
+      errorHandler: (err) => {
+        gutil.beep();
+        gutil.log(err.toString());
+      }
+    }))//任务出错不中断
+    .pipe(size({
+      title: '公共css合并前',
+      gzip:true,
+      pretty:true,
+      showFiles:true,
+      showTotal:true
+    }))
     .pipe(order(Object.keys(json.dependencies)))//排序，根据关键字，Object.keys(json.dependencies)是一个数组，关键字数组
     .pipe(concat('common.css'))//合并其中所有的文件并生成一个新文件common.js
+    .pipe(size({
+      title: '公共css合并后',
+      gzip:true,
+      pretty:true,
+      showFiles:true,
+      showTotal:true
+    }))
     .pipe(gulp.dest('./dist.dev/css'));//将新文件common.js输出在./dist.dev/css文件下
 });
 
 gulp.task('extractjs', () => {//用来抽取node——modules中外部依赖的项目并连接在一起，更名为common.js
   var depend = [];//抽取项目的路径数组
-  Object.keys(json.dependencies).forEach( (value) => {//遍历son中生产模式下依赖的项目所在的对象dependencies中各个属性的键名
+  Object.keys(json.dependencies).forEach((value) => {//遍历son中生产模式下依赖的项目所在的对象dependencies中各个属性的键名
     depend.push('./node_modules/' + value + '/' + value + '.js');//并根据该键名生成路径，并添加到数组depend中
     depend.push('./node_modules/' + value + '/dist/' + value + '.js');//并根据该键名生成路径，并添加到数组depend中
   });
   //上面的地址有可能因为包作者的地址存放习惯而不准，因此需要检查实际包地址进行修改或添加上面的地址
   //上面的这一步会生成很多空地址，这里需要有更好的方法能准确的找到依赖的包（所幸下面的concat方法合并所有地址下的文件，可以排掉空地址）
   return gulp.src(depend)//针对该数组中的文件路径操作,按照顺序处理，即按照json.dependencies里的顺序
+    .pipe(plumber({
+      errorHandler: (err) => {
+        gutil.beep();
+        gutil.log(err.toString());
+      }
+    }))//任务出错不中断
+    .pipe(size({
+      title: '公共js合并前',
+      gzip:true,
+      pretty:true,
+      showFiles:true,
+      showTotal:true
+    }))
     .pipe(order(Object.keys(json.dependencies)))//排序，根据关键字，Object.keys(json.dependencies)是一个数组，关键字数组
     .pipe(concat('common.js'))//合并其中所有的文件并生成一个新文件common.js
+    .pipe(size({
+      title: '公共js合并后',
+      gzip:true,
+      pretty:true,
+      showFiles:true,
+      showTotal:true
+    }))
     .pipe(gulp.dest('./dist.dev/js'));//将新文件common.js输出在./dist.dev/js文件下
 });
 
@@ -92,15 +207,41 @@ gulp.task('compilejs', () => {//写一个compilejs命令,编译合并所有手�
     //该任务针对的文件，使用angular时，合并文件需要遵循一定顺序规则，比如最大的module在最前面，接下来，所有小的module次之（小module之间
     // 无需顺序），剩下的随意。所以gulp.src('./src/**/*.js')可改为gulp.src(['./src/app.js','./src/**/module.js','./src/**/*.js']),
     //其中'./src/app.js'指的是最大的文件位置名字一开始就定死的module。
-    .pipe(babel({
+    .pipe(plumber({
+      errorHandler: (err) => {
+        gutil.beep();
+        gutil.log(err.toString());
+      }
+    }))//任务出错不中断
+    .pipe(size({
+      title: '手动js编译合并前',
+      gzip:true,
+      pretty:true,
+      showFiles:true,
+      showTotal:true
+    }))
+    .pipe(babel({//编译es6转为es5
       presets: ['es2015']
     }))//转换为es6
     .pipe(concat('app.js'))//合并其中所有的文件并生成一个新文件app.js
+    .pipe(size({
+      title: '手动js编译合并后',
+      gzip:true,
+      pretty:true,
+      showFiles:true,
+      showTotal:true
+    }))
     .pipe(gulp.dest('./dist.dev/js')); //将会在dist.dev/js下生成app.js
 });
 
 gulp.task('inject-dev', () => {
   return gulp.src('./src/index.html')
+    .pipe(plumber({
+      errorHandler: (err) => {
+        gutil.beep();
+        gutil.log(err.toString());
+      }
+    }))//任务出错不中断
     .pipe(inject(gulp.src(['./dist.dev/**/common.js', './dist.dev/**/common.css', './dist.dev/**/*.js', './dist.dev/**/*.css'], { read: false }, { starttag: '<!-- inject:{{ext}} -->' }),
       { relative: false, ignorePath: 'dist.dev/', addRootSlash: false }))
     .pipe(gulp.dest('./dist.dev'));
@@ -153,13 +294,13 @@ gulp.task('reload', () => {//浏览器重载，刷新
 gulp.task('watch', () => {//写一个监听命令
   return gulp.watch([//监听
       //'./src/**/*.css',//被监听的文件
-      './src/**/*.scss',//被监听的文件
-      './src/**/*.html',//被监听的文件
-      './src/**/*.js'//被监听的文件
+      'src/**/*.scss',//被监听的文件
+      'src/**/*.html',//被监听的文件
+      'src/**/*.js'//被监听的文件
     ],
     (e) => {
       sequence('scss', 'extractcss', 'extractjs', 'compilejs', 'inject-dev', 'reload')//监听后要执行的任务,通过sequence按顺序执行,然后返回一个必须执行的函数，该函数的参数是一个函数，如下
-      ( (err) => {//这个参数函数是用来在出错时抛出错误的
+      ((err) => {//这个参数函数是用来在出错时抛出错误的
         if (err) {
           console.log(err);
         }//如果出错，抛出错误的
@@ -179,16 +320,42 @@ gulp.task('clean-pro', (cb) => {//删除文件夹或文件
 
 gulp.task('images-pro', () => {//对图片做处理，并移动到其他地方
   return gulp.src('./src/images/**/*.{jpg,png,svg,gif,ico}')
+    .pipe(plumber({
+      errorHandler: (err) => {
+        gutil.beep();
+        gutil.log(err.toString());
+      }
+    }))//任务出错不中断
     .pipe(gulp.dest('./dist.pro/images'));
 });
 
 gulp.task('minify-uglify-rev', () => {//混淆压缩的命令
   gulp.src(['./dist.dev/js/common.js', './dist.dev/js/app.js', './dist.dev/js/*.js'])//针对文件
+    .pipe(plumber({
+      errorHandler: (err) => {
+        gutil.beep();
+        gutil.log(err.toString());
+      }
+    }))//任务出错不中断
+    .pipe(size({
+      title: '所有js压缩混淆合并前',
+      gzip:true,
+      pretty:true,
+      showFiles:true,
+      showTotal:true
+    }))
     .pipe(concat('app.min.js'))//连接并更名
     .pipe(uglify({//混淆
       mangle: { except: ['require', 'exports', 'module', '$'] },//排除混淆关键字,默认：true 是否修改变量名
       compress: true,//类型：Boolean 默认：true 是否完全压缩，若想完全压缩，则无法保留注释
       //preserveComments: 'all' //保留所有注释,若保留注释，则无法完全压缩
+    }))
+    .pipe(size({
+      title: '所有js压缩混淆合并后',
+      gzip:true,
+      pretty:true,
+      showFiles:true,
+      showTotal:true
     }))
     .pipe(rev())//打上版本号
     .pipe(gulp.dest('./dist.pro/js'));//输出到文件夹
@@ -196,31 +363,57 @@ gulp.task('minify-uglify-rev', () => {//混淆压缩的命令
 
 gulp.task('minifycss-rev', () => {//压缩css的命令
   gulp.src(['./dist.dev/css/common.css', './dist.dev/css/app.css', './dist.dev/css/*.css'])//针对文件
+    .pipe(plumber({
+      errorHandler: (err) => {
+        gutil.beep();
+        gutil.log(err.toString());
+      }
+    }))//任务出错不中断
+    .pipe(size({
+      title: '所有css压缩合并前',
+      gzip:true,
+      pretty:true,
+      showFiles:true,
+      showTotal:true
+    }))
     .pipe(concat('app.min.css'))//连接并更名
     .pipe(base64({//将css中图片地址转为base64
       baseDir: './dist.dev',
-      extensions: ['png','jpg','png','svg','gif','ico'],
+      extensions: ['png', 'jpg', 'png', 'svg', 'gif', 'ico'],
       maxImageSize: 20 * 1024, // bytes
       debug: false
     }))//转为base64
     .pipe(minifycss())//压缩css
+    .pipe(size({
+      title: '所有css压缩合并后',
+      gzip:true,
+      pretty:true,
+      showFiles:true,
+      showTotal:true
+    }))
     .pipe(rev())//打上版本号
     .pipe(gulp.dest('./dist.pro/css'));//输出到文件夹
 });
 
 gulp.task('inject-pro', () => {//css、js注入html
   return gulp.src('./src/index.html')
+    .pipe(plumber({
+      errorHandler: (err) => {
+        gutil.beep();
+        gutil.log(err.toString());
+      }
+    }))//任务出错不中断
     .pipe(inject(gulp.src(['./dist.pro/js/*.min.js', './dist.pro/css/*.min.css'], { read: false }, { starttag: '<!-- inject:{{ext}} -->' }),
       { relative: false, ignorePath: 'dist.pro/', addRootSlash: false }))
     .pipe(htmlmin({//压缩html
-      collapseWhitespace:true,
-      collapseBooleanAttributes:true,
-      removeComments:true,
-      removeEmptyAttributes:true,
-      removeScriptTypeAttributes:true,
-      removeStyleLinkTypeAttributes:true,
-      minifyJS:true,
-      minifyCSS:true
+      collapseWhitespace: true,
+      collapseBooleanAttributes: true,
+      removeComments: true,
+      removeEmptyAttributes: true,
+      removeScriptTypeAttributes: true,
+      removeStyleLinkTypeAttributes: true,
+      minifyJS: true,
+      minifyCSS: true
     }))
     .pipe(gulp.dest('./dist.pro'));
 });
@@ -239,14 +432,40 @@ gulp.task('clean-zip', (cb) => {//删除文件夹或文件
   return del(['./test.zip'], cb);//所删除文件路径，及回调函数
 });
 
-gulp.task('zip',['clean-zip'], () => {//打包压缩zip
+gulp.task('zip', ['clean-zip'], () => {//打包压缩zip
   gulp.src('./dist.pro/**/*')//要打包的文件夹或文件
+    .pipe(plumber({
+      errorHandler: (err) => {
+        gutil.beep();
+        gutil.log(err.toString());
+      }
+    }))//任务出错不中断
+    .pipe(size({
+      title: '文件打包压缩前',
+      gzip:true,
+      pretty:true,
+      showFiles:true,
+      showTotal:true
+    }))
     .pipe(zip('test.zip'))//打包并生成的名字
+    .pipe(size({
+      title: '文件打包压缩后',
+      gzip:true,
+      pretty:true,
+      showFiles:true,
+      showTotal:true
+    }))
     .pipe(gulp.dest('./'));//将打包后的文件输出位置
 });
 
 gulp.task('ftp', () => {//ftp发送zip文件到服务器
   return gulp.src('./test.zip')
+    .pipe(plumber({
+      errorHandler: (err) => {
+        gutil.beep();
+        gutil.log(err.toString());
+      }
+    }))//任务出错不中断
     .pipe(ftp({
       host: '',//服务器地址(必须)
       port: 80,//服务器端口(必须)
@@ -257,5 +476,5 @@ gulp.task('ftp', () => {//ftp发送zip文件到服务器
       //froot:'',//提单文件前缀(可选，默认：/usr/local/imgcache/htdocs)
       //exp:null,//体验环境地址(可选，默认null)
       //pro:null//正式环境地址(可选，默认null)
-}));
+    }));
 });
