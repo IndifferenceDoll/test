@@ -18,7 +18,7 @@ var gulp = require('gulp'),
   uglify = require('gulp-uglify'),//js压缩混淆
   minifycss = require('gulp-minify-css'),//css压缩
   rev = require('gulp-rev'),//版本号
-  babel = require('gulp-babel'),//巴贝尔，配合babel-preset-es2015可以转换js语法类型
+  babel = require('gulp-babel'),//巴贝尔，配合babel-preset-es2015,babel-core可以转换js语法类型
   imagemin = require('gulp-imagemin'),//图片压缩
   pngquant = require('imagemin-pngquant'),//深度压缩
   cache = require('gulp-cache'),//获取缓存,图片快取
@@ -31,7 +31,6 @@ var gulp = require('gulp'),
   plumber = require('gulp-plumber'),//管道工，使任务出错时不中断
   size = require('gulp-size');//显示文件大小
 //plugins = require('gulp-load-plugins')();//自动加载，自动加载所有package.json中devDependencies对象里的依赖,使用插件时调用
-
 ////plugins.XX就可以使用。（XX指的是gulp-后面的名字）,使用gulp-load-plugins后，值需要引gulp就可以，不需要再像上面一样一个一个引
 
 //gulp-sourcemaps 当压缩的JS出错，能根据这个找到未压缩代码的位置 不会一片混乱代码
@@ -202,8 +201,8 @@ gulp.task('extractjs', () => {//用来抽取node——modules中外部依赖的�
 });
 
 gulp.task('compilejs', () => {//写一个compilejs命令,编译合并所有手写js
-  return gulp.src('./src/**/*.js')
-    //return gulp.src(['./src/app.js','./src/**/module.js','./src/**/*.js'])
+  //return gulp.src('./src/**/*.js')//常规
+    return gulp.src(['./src/app.js','./src/**/module.js','./src/**/*.js'])//angular专用
     //该任务针对的文件，使用angular时，合并文件需要遵循一定顺序规则，比如最大的module在最前面，接下来，所有小的module次之（小module之间
     // 无需顺序），剩下的随意。所以gulp.src('./src/**/*.js')可改为gulp.src(['./src/app.js','./src/**/module.js','./src/**/*.js']),
     //其中'./src/app.js'指的是最大的文件位置名字一开始就定死的module。
