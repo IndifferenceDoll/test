@@ -29,11 +29,12 @@ var gulp = require('gulp'),
   autoprefixer = require('gulp-autoprefixer'),//浏览器前缀
   gulpif = require('gulp-if'),//用来判断
   plumber = require('gulp-plumber'),//管道工，使任务出错时不中断
-  size = require('gulp-size');//显示文件大小
+  size = require('gulp-size'),//显示文件大小
+  sourcemaps = require('gulp-sourcemaps');//当压缩的JS出错，能根据这个找到未压缩代码的位置 不会一片混乱代码
 //plugins = require('gulp-load-plugins')();//自动加载，自动加载所有package.json中devDependencies对象里的依赖,使用插件时调用
 ////plugins.XX就可以使用。（XX指的是gulp-后面的名字）,使用gulp-load-plugins后，值需要引gulp就可以，不需要再像上面一样一个一个引
-
 //gulp-sourcemaps 当压缩的JS出错，能根据这个找到未压缩代码的位置 不会一片混乱代码
+
 
 //gulp-useref 将html引用顺序的CSS JS 变成一个文件例如：
 // <!-- build:js scripts/main.js --> <script src="1.js"></script><script src="2.js"></script><!--endbuild--> 最后变成<script src="main.js"></script>
@@ -71,28 +72,6 @@ gulp.task('images-dev', () => {//对图片做处理，并移动到其他地方
         gutil.log(err.toString());
       }
     }))//任务出错不中断
-    .pipe(size({
-      title: '图片压缩前',
-      gzip:true,
-      pretty:true,
-      showFiles:true,
-      showTotal:true
-    }))
-    .pipe(cache(imagemin({//缓存中取未被修改图片，并压缩
-      optimizationLevel: 5, //类型：Number  默认：3  取值范围：0-7（优化等级）
-      progressive: true, //类型：Boolean 默认：false 无损压缩jpg图片
-      interlaced: true, //类型：Boolean 默认：false 隔行扫描gif进行渲染
-      multipass: true, //类型：Boolean 默认：false 多次优化svg直到完全优化
-      svgoPlugins: [{ removeViewBox: false }],//不要移除svg的viewbox属性
-      use: [pngquant()] //使用pngquant深度压缩png图片的imagemin插件
-    })))
-    .pipe(size({
-      title: '图片压缩后',
-      gzip:true,
-      pretty:true,
-      showFiles:true,
-      showTotal:true
-    }))
     .pipe(gulp.dest('./dist.dev/images'));
 });
 
@@ -132,7 +111,11 @@ gulp.task('scss', () => {//写一个scss命令,编译所有手写的样式,后�
     .pipe(gulp.dest('./dist.dev/css')); //将会在dist.dev/css下生成app.css
 });
 
-gulp.task('extractcss', () => {//用来抽取node——modules中外部依赖的项目并连接在一起，更名为common.css
+gulp.task('clean-plugin', (cb) => {//删除文件夹或文件
+  return del(['./plugin/css','./plugin/js'], cb);//所删除文件路径，及回调函数
+});
+
+gulp.task('extractCss', (cb) => {//用来抽取node——modules中外部依赖的项目并放在./plugin/css下
   var depend = [];//抽取项目的路径数组
   Object.keys(json.dependencies).forEach((value) => {//遍历son中生产模式下依赖的项目所在的对象dependencies中各个属性的键名
     depend.push('./node_modules/' + value + '/' + value + '.css');//并根据该键名生成路径，并添加到数组depend中
@@ -140,7 +123,19 @@ gulp.task('extractcss', () => {//用来抽取node——modules中外部依赖的
   });
   //上面的地址有可能因为包作者的地址存放习惯而不准，因此需要检查实际包地址进行修改或添加上面的地址
   //上面的这一步会生成很多空地址，这里需要有更好的方法能准确的找到依赖的包（所幸下面的concat方法合并所有地址下的文件，可以排掉空地址）
+  //del(['./plugin/css'], cb);//所删除文件路径，及回调函数
   return gulp.src(depend)//针对该数组中的文件路径操作,按照顺序处理，即按照json.dependencies里的顺序
+    .pipe(plumber({
+      errorHandler: (err) => {
+        gutil.beep();
+        gutil.log(err.toString());
+      }
+    }))//任务出错不中断
+    .pipe(gulp.dest('./plugin/css'));//将文件输出在./plugin/css文件下
+});
+
+gulp.task('concatPluginCss',() => {
+  return gulp.src('./plugin/css/**/*.css')//合并该文件夹下的第三方样式
     .pipe(plumber({
       errorHandler: (err) => {
         gutil.beep();
@@ -166,7 +161,7 @@ gulp.task('extractcss', () => {//用来抽取node——modules中外部依赖的
     .pipe(gulp.dest('./dist.dev/css'));//将新文件common.js输出在./dist.dev/css文件下
 });
 
-gulp.task('extractjs', () => {//用来抽取node——modules中外部依赖的项目并连接在一起，更名为common.js
+gulp.task('extractJs', (cb) => {//用来抽取node——modules中外部依赖的项目并输出在./plugin/js文件夹下
   var depend = [];//抽取项目的路径数组
   Object.keys(json.dependencies).forEach((value) => {//遍历son中生产模式下依赖的项目所在的对象dependencies中各个属性的键名
     depend.push('./node_modules/' + value + '/' + value + '.js');//并根据该键名生成路径，并添加到数组depend中
@@ -174,7 +169,19 @@ gulp.task('extractjs', () => {//用来抽取node——modules中外部依赖的�
   });
   //上面的地址有可能因为包作者的地址存放习惯而不准，因此需要检查实际包地址进行修改或添加上面的地址
   //上面的这一步会生成很多空地址，这里需要有更好的方法能准确的找到依赖的包（所幸下面的concat方法合并所有地址下的文件，可以排掉空地址）
+  //del(['./plugin/js'], cb);//所删除文件路径，及回调函数
   return gulp.src(depend)//针对该数组中的文件路径操作,按照顺序处理，即按照json.dependencies里的顺序
+    .pipe(plumber({
+      errorHandler: (err) => {
+        gutil.beep();
+        gutil.log(err.toString());
+      }
+    }))//任务出错不中断
+    .pipe(gulp.dest('./plugin/js'));//将新文件输出在./plugin/js文件下
+});
+
+gulp.task('concatPluginJs',() => {
+  return gulp.src('./plugin/js/**/*.js')//合并该文件夹下的第三方样式
     .pipe(plumber({
       errorHandler: (err) => {
         gutil.beep();
@@ -197,10 +204,10 @@ gulp.task('extractjs', () => {//用来抽取node——modules中外部依赖的�
       showFiles:true,
       showTotal:true
     }))
-    .pipe(gulp.dest('./dist.dev/js'));//将新文件common.js输出在./dist.dev/js文件下
+    .pipe(gulp.dest('./dist.dev/js'));//将新文件common.js输出在./dist.dev/css文件下
 });
 
-gulp.task('compilejs', () => {//写一个compilejs命令,编译合并所有手写js
+gulp.task('compileJs', () => {//写一个compilejs命令,编译合并所有手写js
   //return gulp.src('./src/**/*.js')//常规
     return gulp.src(['./src/app.js','./src/**/module.js','./src/**/*.js'])//angular专用
     //该任务针对的文件，使用angular时，合并文件需要遵循一定顺序规则，比如最大的module在最前面，接下来，所有小的module次之（小module之间
@@ -295,10 +302,11 @@ gulp.task('watch', () => {//写一个监听命令
       //'./src/**/*.css',//被监听的文件
       'src/**/*.scss',//被监听的文件
       'src/**/*.html',//被监听的文件
-      'src/**/*.js'//被监听的文件
+      'src/**/*.js',//被监听的文件
+      'src/images/**/*.{jpg,png,svg,gif,ico}'//被监听的文件
     ],
     (e) => {
-      sequence('scss', 'extractcss', 'extractjs', 'compilejs', 'inject-dev', 'reload')//监听后要执行的任务,通过sequence按顺序执行,然后返回一个必须执行的函数，该函数的参数是一个函数，如下
+      sequence('scss',  'extractCss','concatPluginCss', 'extractJs', 'concatPluginJs','compileJs', 'inject-dev', 'reload')//监听后要执行的任务,通过sequence按顺序执行,然后返回一个必须执行的函数，该函数的参数是一个函数，如下
       ((err) => {//这个参数函数是用来在出错时抛出错误的
         if (err) {
           console.log(err);
@@ -325,6 +333,28 @@ gulp.task('images-pro', () => {//对图片做处理，并移动到其他地方
         gutil.log(err.toString());
       }
     }))//任务出错不中断
+    .pipe(size({
+      title: '图片压缩前',
+      gzip:true,
+      pretty:true,
+      showFiles:true,
+      showTotal:true
+    }))
+    .pipe(cache(imagemin({//缓存中取未被修改图片，并压缩
+      optimizationLevel: 5, //类型：Number  默认：3  取值范围：0-7（优化等级）
+      progressive: true, //类型：Boolean 默认：false 无损压缩jpg图片
+      interlaced: true, //类型：Boolean 默认：false 隔行扫描gif进行渲染
+      multipass: true, //类型：Boolean 默认：false 多次优化svg直到完全优化
+      svgoPlugins: [{ removeViewBox: false }],//不要移除svg的viewbox属性
+      use: [pngquant()] //使用pngquant深度压缩png图片的imagemin插件
+    })))
+    .pipe(size({
+      title: '图片压缩后',
+      gzip:true,
+      pretty:true,
+      showFiles:true,
+      showTotal:true
+    }))
     .pipe(gulp.dest('./dist.pro/images'));
 });
 
@@ -344,11 +374,13 @@ gulp.task('minify-uglify-rev', () => {//混淆压缩的命令
       showTotal:true
     }))
     .pipe(concat('app.min.js'))//连接并更名
+    .pipe(sourcemaps.init())
     .pipe(uglify({//混淆
       mangle: { except: ['require', 'exports', 'module', '$'] },//排除混淆关键字,默认：true 是否修改变量名
       compress: true,//类型：Boolean 默认：true 是否完全压缩，若想完全压缩，则无法保留注释
       //preserveComments: 'all' //保留所有注释,若保留注释，则无法完全压缩
     }))
+    .pipe(sourcemaps.write())
     .pipe(size({
       title: '所有js压缩混淆合并后',
       gzip:true,
@@ -382,7 +414,9 @@ gulp.task('minifycss-rev', () => {//压缩css的命令
       maxImageSize: 20 * 1024, // bytes
       debug: false
     }))//转为base64
+    .pipe(sourcemaps.init())
     .pipe(minifycss())//压缩css
+    .pipe(sourcemaps.write())
     .pipe(size({
       title: '所有css压缩合并后',
       gzip:true,
@@ -420,10 +454,10 @@ gulp.task('inject-pro', () => {//css、js注入html
 //gulp.task('default',[...任务名...]);//启动gulp时的默认任务
 //gulp.task('default',sequence(...任务名...));//启动gulp时的默认任务,按照顺序呢
 //noinspection Eslint
-gulp.task('build-dev', sequence('clean-dev', 'images-dev', 'scss', 'extractcss', 'extractjs', 'compilejs', 'inject-dev', 'browserSync', 'watch'));//构建开发环境下的包
+gulp.task('build-dev', sequence('clean-dev', 'images-dev', 'scss','compileJs', 'clean-plugin', 'extractCss','concatPluginCss', 'extractJs', 'concatPluginJs','inject-dev', 'browserSync', 'watch'));//构建开发环境下的包
 //'clean-dev'清除包  'scss'编译手写样式并连接起来  'extractcss'抽取外部依赖样式并连接起来 'extractjs'抽取外部依赖js并连接起来
-//'compilejs'编译手写js并连接起来 'inject'将生成的js和css注入index.html 'browserSync'启动服务 'watch'监听src下文件，然后按顺序sequence('scss','extract','compilejs','inject','reload')并刷新
-gulp.task('build-pro', sequence('clean-dev', 'clean-pro', 'images-dev', 'scss', 'extractcss', 'extractjs', 'compilejs', 'images-pro', 'minify-uglify-rev', 'minifycss-rev', 'inject-dev', 'inject-pro'));//构建生产环境下的包
+//'compilejs'编译手写js并连接起来 'inject'将生成的js和css注入index.html 'browserSync'启动服务 'watch'监听src下文件，然后按顺序sequence(...)并刷新
+gulp.task('build-pro', sequence('clean-pro', 'images-pro', 'scss', 'compilejs','extractCss', 'extractJs',  'minify-uglify-rev', 'minifycss-rev', 'inject-dev', 'inject-pro'));//构建生产环境下的包
 //sequence('clean-dev','clean-pro','scss','extractcss','extractjs','compilejs','minify-uglify-rev','minifycss-rev','inject-dev','inject-pro')中最后的inject-pro与
 //minify-uglify-rev、minifycss-rev中间必须隔一个任务，否则会导致inject-pro任务执行失败
 
