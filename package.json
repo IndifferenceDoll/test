@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "angular": "^1.6.0",
-    "bootstrap": "^3.3.7"
+    "bootstrap": "^3.3.7",
+    "jQuery": "^1.7.4"
   }
 }
