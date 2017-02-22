@@ -4,7 +4,10 @@
  */
 
 //如果有新引入的js或者css框架的话，需要在extractJs-dev引入、extractCss-dev引入、extractJs-pro引入且排序、extractCss-pro引入、inject-dev排序
-
+//1.其中引入extractCss-pro和extractCss-dev的css框架，引入到dependCss数组里就可以
+//2.其中引入extractJs-pro和extractJs-dev的js框架，引入到dependJs数组里并根据需要排序就可以
+//3.其中引入inject-dev的js框架在injectDevDependJs数组里引入并排序就可以了
+  //一般2和3一起改，1单独改，及个别框架需要123一起改
 var gulp = require('gulp'),//全局和项目里各安装一个
 //关于gulp，一般除了全局安装一个以外，项目里面也得安装一个。只在全局安装，可能require不到，或者别的地方克隆了你的项目后，npm install之
 // 后，可能依然启动不了gulp的服务，因为对方可能全局没有安装过gulp；只在项目中安装gulp，在命令行中只有cd到gulp目录下才能运行gulp命令，
@@ -33,7 +36,27 @@ var gulp = require('gulp'),//全局和项目里各安装一个
   gulpif = require('gulp-if'),//用来判断
   plumber = require('gulp-plumber'),//管道工，使任务出错时不中断
   //size = require('gulp-size'),//显示文件大小
-  sourcemaps = require('gulp-sourcemaps');//当压缩的JS出错，能根据这个找到未压缩代码的位置 不会一片混乱代码
+  sourcemaps = require('gulp-sourcemaps'),//当压缩的JS出错，能根据这个找到未压缩代码的位置 不会一片混乱代码
+    templateCache = require('gulp-angular-templatecache');
+  //templateCache是angular生成自己的模板缓存的插件，作用是提升性能（如果没有，angular本身将会在发布出去后再一次请求http模板缓存用于显示，而有了之后，就会省去http请求这一步，提升性能。）
+  //它的作用是把所有html文件打成js模板，引入index.html中，然后作为一个模块module注入到项目模块中，如果没有，项目也是可以继续的，只是性能会受到一些影响
+
+
+
+var dependCss = [
+  './node_modules/**/bootstrap.css',//框架引入处
+];
+var dependJs = [
+  './node_modules/**/jQuery.js',
+  './node_modules/**/angular.js',//框架引入且排序出
+];
+var injectDevDependJs = [
+  './dist.dev/plugin/**/jQuery.js',//有些框架之间需要顺序，就在这里单独写
+  './dist.dev/plugin/**/angular.js',
+  './dist.dev/**/*.js',
+  './dist.dev/**/*.css'
+  ];
+
 //plugins = require('gulp-load-plugins')();//自动加载，自动加载所有package.json中devDependencies对象里的依赖,使用插件时调用
 ////plugins.XX就可以使用。（XX指的是gulp-后面的名字）,使用gulp-load-plugins后，值需要引gulp就可以，不需要再像上面一样一个一个引
 //gulp-sourcemaps 当压缩的JS出错，能根据这个找到未压缩代码的位置 不会一片混乱代码
@@ -157,9 +180,7 @@ gulp.task('extractCss-dev', (cb) => {//用来抽取node——modules中外部依
   ////上面的地址有可能因为包作者的地址存放习惯而不准，因此需要检查实际包地址进行修改或添加上面的地址
   ////上面的这一步会生成很多空地址，这里需要有更好的方法能准确的找到依赖的包（所幸下面的concat方法合并所有地址下的文件，可以排掉空地址）
   //del(['./plugin/css'], cb);//所删除文件路径，及回调函数
-  return gulp.src([
-      './node_modules/**/bootstrap.css',//框架引入处
-    ])//针对该数组中的文件路径操作
+  return gulp.src(dependCss)//针对该数组中的文件路径操作
     .pipe(plumber({
       errorHandler: (err) => {
         gutil.beep();
@@ -179,10 +200,7 @@ gulp.task('extractJs-dev', (cb) => {//用来抽取node——modules中外部依�
   ////上面的地址有可能因为包作者的地址存放习惯而不准，因此需要检查实际包地址进行修改或添加上面的地址
   ////上面的这一步会生成很多空地址，这里需要有更好的方法能准确的找到依赖的包（所幸下面的concat方法合并所有地址下的文件，可以排掉空地址）
   //del(['./plugin/js'], cb);//所删除文件路径，及回调函数
-  return gulp.src([
-      './node_modules/**/jQuery.js',
-      './node_modules/**/angular.js',//框架引入处
-    ])//针对该数组中的文件路径操作,按照顺序处理
+  return gulp.src(dependJs)//针对该数组中的文件路径操作,按照顺序处理
     .pipe(plumber({
       errorHandler: (err) => {
         gutil.beep();
@@ -190,6 +208,21 @@ gulp.task('extractJs-dev', (cb) => {//用来抽取node——modules中外部依�
       }
     }))//任务出错不中断
     .pipe(gulp.dest('./dist.dev/plugin/js'));//将新文件输出在./dist.dev/plugin/js文件下
+});
+
+gulp.task('templates-dev', function () {
+  //生成templates
+  return gulp.src(['./src/**/*.html','!./src/index.html'])
+    .pipe(plumber({
+      errorHandler: (err) => {
+        gutil.beep();
+        gutil.log(err.toString());
+      }
+    }))
+    .pipe(templateCache({
+      module: 'testAngular.templates'//生成一个模块，并给它起名字，且需要注入到项目module里
+    }))
+    .pipe(gulp.dest('./dist.dev/js'));
 });
 
 gulp.task('inject-dev', () => {
@@ -200,12 +233,7 @@ gulp.task('inject-dev', () => {
         gutil.log(err.toString());
       }
     }))//任务出错不中断
-    .pipe(inject(gulp.src([
-      './dist.dev/plugin/**/jQuery.js',//有些框架之间需要顺序，就在这里单独写
-      './dist.dev/plugin/**/angular.js',
-      './dist.dev/**/*.js',
-      './dist.dev/**/*.css'
-    ], { read: false }, { starttag: '<!-- inject:{{ext}} -->' }),
+    .pipe(inject(gulp.src(injectDevDependJs, { read: false }, { starttag: '<!-- inject:{{ext}} -->' }),
       { relative: false, ignorePath: 'dist.dev/', addRootSlash: false }))
     .pipe(gulp.dest('./dist.dev'));
 });
@@ -520,6 +548,28 @@ gulp.task('extractJs-pro', (cb) => {//用来抽取node——modules中外部依�
     .pipe(gulp.dest('./dist.pro/plugin/js'));//将新文件输出在./dist.dev/plugin/js文件下
 });
 
+
+gulp.task('templates-pro', function () {
+  //生成templates
+  return gulp.src(['./src/**/*.html','!./src/index.html'])
+    .pipe(plumber({
+      errorHandler: (err) => {
+        gutil.beep();
+        gutil.log(err.toString());
+      }
+    }))
+    .pipe(templateCache({
+      module: 'testAngular.templates'
+    }))
+    .pipe(sourcemaps.init())
+    .pipe(uglify({
+      mangle: { except: ['require', 'exports', 'module', '$'] },
+      compress: true,
+    }))
+    .pipe(rev())
+    .pipe(gulp.dest('./dist.pro/js'));//生成的文件注入index后必须在app后面
+});
+
 gulp.task('inject-pro', () => {//css、js注入html
   return gulp.src('./src/index.html')
     .pipe(plumber({
@@ -546,10 +596,10 @@ gulp.task('inject-pro', () => {//css、js注入html
 //gulp.task('default',[...任务名...]);//启动gulp时的默认任务
 //gulp.task('default',sequence(...任务名...));//启动gulp时的默认任务,按照顺序呢
 //noinspection Eslint
-gulp.task('build-dev', sequence('clean-dev', 'images-dev', 'scss-dev','compileJs-dev','extractCss-dev','extractJs-dev','inject-dev', 'browserSync', 'watch'));//构建开发环境下的包
+gulp.task('build-dev', sequence('clean-dev', 'images-dev', 'scss-dev','compileJs-dev','extractCss-dev','extractJs-dev','templates-dev','inject-dev', 'browserSync', 'watch'));//构建开发环境下的包
 //'clean-dev'清除包  'scss'编译手写样式并连接起来  'extractcss'抽取外部依赖样式并连接起来 'extractjs'抽取外部依赖js并连接起来
 //'compilejs'编译手写js并连接起来 'inject'将生成的js和css注入index.html 'browserSync'启动服务 'watch'监听src下文件，然后按顺序sequence(...)并刷新
-gulp.task('build-pro', sequence('clean-pro', 'images-pro', 'scss-pro', 'extractCss-pro','compileJs-pro', 'extractJs-pro','inject-pro'));//构建生产环境下的包
+gulp.task('build-pro', sequence('clean-pro', 'images-pro', 'scss-pro', 'extractCss-pro','compileJs-pro', 'extractJs-pro','templates-pro','inject-pro'));//构建生产环境下的包
 //sequence('clean-dev','clean-pro','scss','extractcss','extractjs','compilejs','minify-uglify-rev','minifycss-rev',' ','inject-pro')中最后的inject-pro与
 //minify-uglify-rev、minifycss-rev中间必须隔一个任务，否则会导致inject-pro任务执行失败
 

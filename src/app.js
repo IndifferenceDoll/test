@@ -5,4 +5,5 @@
 
 var testAngular = angular.module('testAngular', [
   //各种插件注入
+  'testAngular.templates'
 ]);

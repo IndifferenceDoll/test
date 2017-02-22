@@ -3,7 +3,11 @@
  * Created by jin on 2016/12/13.
  */
 
-//如果有新引入的js或者css框架的话，需要在extractJs-dev引入、extractCss-dev引入、extractJs-pro引入且排序、extractCss-pro引入、inject-dev排序
+//如果有新引入的js或者css框架的话，需要在extractJs-dev引入、extractCss-dev引入、extractCss-pro引入、extractJs-pro引入且排序、inject-dev排序
+//1.其中引入extractCss-pro和extractCss-dev的css框架，引入到dependCss数组里就可以
+//2.其中引入extractJs-pro和extractJs-dev的js框架，引入到dependJs数组里并根据需要排序就可以
+//3.其中引入inject-dev的js框架在injectDevDependJs数组里引入并排序就可以了
+  //一般2和3一起改，1单独改，及个别框架需要123一起改
   //更多详细注释在doc/gulpfile.md里，如果这里有修改的地方，请在doc/gulpfile.md里也修改并写上详细说明
 
 var gulp = require('gulp'),//全局和项目里各安装一个
@@ -27,7 +31,22 @@ var gulp = require('gulp'),//全局和项目里各安装一个
   autoprefixer = require('gulp-autoprefixer'),
   gulpif = require('gulp-if'),
   plumber = require('gulp-plumber'),
-  sourcemaps = require('gulp-sourcemaps');
+  sourcemaps = require('gulp-sourcemaps'),
+  templateCache = require('gulp-angular-templatecache');
+
+var dependCss = [
+  './node_modules/**/bootstrap.css',//框架引入处
+];
+var dependJs = [
+  './node_modules/**/jQuery.js',
+  './node_modules/**/angular.js',//框架引入且排序出
+];
+var injectDevDependJs = [
+  './dist.dev/plugin/**/jQuery.js',//有些框架之间需要顺序，就在这里单独写
+  './dist.dev/plugin/**/angular.js',
+  './dist.dev/**/*.js',
+  './dist.dev/**/*.css'
+  ];
 
 gulp.task('default', []);
 gulp.task('clean-all', ['clean-dev', 'clean-pro']);
@@ -80,9 +99,7 @@ gulp.task('compileJs-dev', () => {
 });
 
 gulp.task('extractCss-dev', (cb) => {
-  return gulp.src([
-      './node_modules/**/bootstrap.css',//框架引入处
-    ])
+  return gulp.src(dependCss)
     .pipe(plumber({
       errorHandler: (err) => {
         gutil.beep();
@@ -93,10 +110,7 @@ gulp.task('extractCss-dev', (cb) => {
 });
 
 gulp.task('extractJs-dev', (cb) => {
-  return gulp.src([
-      './node_modules/**/jQuery.js',
-      './node_modules/**/angular.js',//框架引入处
-    ])
+  return gulp.src(dependJs)
     .pipe(plumber({
       errorHandler: (err) => {
         gutil.beep();
@@ -104,6 +118,21 @@ gulp.task('extractJs-dev', (cb) => {
       }
     }))
     .pipe(gulp.dest('./dist.dev/plugin/js'));
+});
+
+gulp.task('templates-dev', function () {
+  //生成templates
+  return gulp.src(['./src/**/*.html','!./src/index.html'])
+    .pipe(plumber({
+      errorHandler: (err) => {
+        gutil.beep();
+        gutil.log(err.toString());
+      }
+    }))
+    .pipe(templateCache({
+      module: 'testAngular.templates'
+    }))
+    .pipe(gulp.dest('./dist.dev/js'));
 });
 
 gulp.task('inject-dev', () => {
@@ -114,12 +143,7 @@ gulp.task('inject-dev', () => {
         gutil.log(err.toString());
       }
     }))
-    .pipe(inject(gulp.src([
-      './dist.dev/plugin/**/jQuery.js',//有些框架之间需要顺序，就在这里单独写
-      './dist.dev/plugin/**/angular.js',
-      './dist.dev/**/*.js',
-      './dist.dev/**/*.css'
-    ], { read: false }, { starttag: '<!-- inject:{{ext}} -->' }),
+    .pipe(inject(gulp.src(injectDevDependJs, { read: false }, { starttag: '<!-- inject:{{ext}} -->' }),
       { relative: false, ignorePath: 'dist.dev/', addRootSlash: false }))
     .pipe(gulp.dest('./dist.dev'));
 });
@@ -210,9 +234,7 @@ gulp.task('scss-pro', () => {
 });
 
 gulp.task('extractCss-pro', (cb) => {
-  return gulp.src([
-      './node_modules/**/bootstrap.css',//框架引入处
-    ])
+  return gulp.src(dependCss)
     .pipe(plumber({
       errorHandler: (err) => {
         gutil.beep();
@@ -250,10 +272,7 @@ gulp.task('compileJs-pro', () => {
 });
 
 gulp.task('extractJs-pro', (cb) => {
-  return gulp.src([
-    './node_modules/**/jQuery.js',
-    './node_modules/**/angular.js',//框架引入且排序出
-  ])
+  return gulp.src(dependJs)
     .pipe(plumber({
       errorHandler: (err) => {
         gutil.beep();
@@ -268,6 +287,27 @@ gulp.task('extractJs-pro', (cb) => {
     }))
     .pipe(rev())
     .pipe(gulp.dest('./dist.pro/plugin/js'));
+});
+
+gulp.task('templates-pro', function () {
+  //生成templates
+  return gulp.src(['./src/**/*.html','!./src/index.html'])
+    .pipe(plumber({
+      errorHandler: (err) => {
+        gutil.beep();
+        gutil.log(err.toString());
+      }
+    }))
+    .pipe(templateCache({
+      module: 'testAngular.templates'
+    }))
+    .pipe(sourcemaps.init())
+    .pipe(uglify({
+      mangle: { except: ['require', 'exports', 'module', '$'] },
+      compress: true,
+    }))
+    .pipe(rev())
+    .pipe(gulp.dest('./dist.pro/js'));//生成的文件注入index后必须在app后面
 });
 
 gulp.task('inject-pro', () => {
@@ -293,9 +333,9 @@ gulp.task('inject-pro', () => {
     .pipe(gulp.dest('./dist.pro'));
 });
 
-gulp.task('build-dev', sequence('clean-dev', 'images-dev', 'scss-dev','compileJs-dev','extractCss-dev','extractJs-dev','inject-dev', 'browserSync', 'watch'));
+gulp.task('build-dev', sequence('clean-dev', 'images-dev', 'scss-dev','compileJs-dev','extractCss-dev','extractJs-dev','templates-dev','inject-dev', 'browserSync', 'watch'));
 
-gulp.task('build-pro', sequence('clean-pro', 'images-pro', 'scss-pro', 'extractCss-pro','compileJs-pro', 'extractJs-pro','inject-pro'));
+gulp.task('build-pro', sequence('clean-pro', 'images-pro', 'scss-pro', 'extractCss-pro','compileJs-pro', 'extractJs-pro','templates-pro','inject-pro'));
 
 gulp.task('clean-zip', (cb) => {
   return del(['./test.zip'], cb);
