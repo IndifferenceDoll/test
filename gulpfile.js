@@ -36,7 +36,7 @@ var gulp = require('gulp'),//全局和项目里各安装一个
 
 var dependCss = [
   './node_modules/**/bootstrap.css',//框架引入处
-];
+];//急需找到一个gulp插件来整合第三方插件的文件，现在这种笨办法太耗时间
 var dependJs = [
   './node_modules/**/jQuery.js',
   './node_modules/**/angular.js',//框架引入且排序出
