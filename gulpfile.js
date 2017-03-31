@@ -356,17 +356,5 @@ gulp.task('zip', ['clean-zip'], () => {
     .pipe(gulp.dest('./'));
 });
 
-gulp.task('ftp', () => {
-  return gulp.src('./test.zip')
-    .pipe(plumber({
-      errorHandler: (err) => {
-        gutil.beep();
-        gutil.log(err.toString());
-      }
-    }))
-    .pipe(ftp({
-      host: '',
-      port: 80,
-      remotePath: '',
-    }));
-});
+
+
