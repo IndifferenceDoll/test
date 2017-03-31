@@ -37,7 +37,8 @@ var gulp = require('gulp'),//全局和项目里各安装一个
   plumber = require('gulp-plumber'),//管道工，使任务出错时不中断
   //size = require('gulp-size'),//显示文件大小
   sourcemaps = require('gulp-sourcemaps'),//当压缩的JS出错，能根据这个找到未压缩代码的位置 不会一片混乱代码
-    templateCache = require('gulp-angular-templatecache');
+  templateCache = require('gulp-angular-templatecache'),
+  ngAnnotate = require('gulp-ng-annotate');
   //templateCache是angular生成自己的模板缓存的插件，作用是提升性能（如果没有，angular本身将会在发布出去后再一次请求http模板缓存用于显示，而有了之后，就会省去http请求这一步，提升性能。）
   //它的作用是把所有html文件打成js模板，引入index.html中，然后作为一个模块module注入到项目模块中，如果没有，项目也是可以继续的，只是性能会受到一些影响
 
@@ -161,6 +162,7 @@ gulp.task('compileJs-dev', () => {//写一个compilejs命令,编译合并所有�
       presets: ['es2015']
     }))//转换为es6
     .pipe(concat('app.js'))//合并其中所有的文件并生成一个新文件app.js
+    .pipe(ngAnnotate())
     //.pipe(size({
     //  title: '手动js编译合并后',
     //  gzip:true,
@@ -465,6 +467,7 @@ gulp.task('compileJs-pro', () => {//写一个compilejs命令,编译合并所有�
       presets: ['es2015']
     }))//转换为es6
     .pipe(concat('app.min.js'))//合并其中所有的文件并生成一个新文件app.js
+    .pipe(ngAnnotate())
     //.pipe(size({
     //  title: '手动js编译合并后',
     //  gzip:true,
