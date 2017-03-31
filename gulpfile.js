@@ -32,7 +32,8 @@ var gulp = require('gulp'),//全局和项目里各安装一个
   gulpif = require('gulp-if'),
   plumber = require('gulp-plumber'),
   sourcemaps = require('gulp-sourcemaps'),
-  templateCache = require('gulp-angular-templatecache');
+  templateCache = require('gulp-angular-templatecache'),
+  ngAnnotate = require('gulp-ng-annotate');
 
 var dependCss = [
   './node_modules/**/bootstrap.css',//框架引入处
@@ -95,6 +96,7 @@ gulp.task('compileJs-dev', () => {
       presets: ['es2015']
     }))
     .pipe(concat('app.js'))
+    .pipe(ngAnnotate())
     .pipe(gulp.dest('./dist.dev/js'));
 });
 
@@ -261,6 +263,7 @@ gulp.task('compileJs-pro', () => {
       presets: ['es2015']
     }))//转换为es6
     .pipe(concat('app.min.js'))
+    .pipe(ngAnnotate())
     .pipe(sourcemaps.init())
     .pipe(uglify({
       mangle: { except: ['require', 'exports', 'module', '$'] },
