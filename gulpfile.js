@@ -36,11 +36,13 @@ var gulp = require('gulp'),//全局和项目里各安装一个
   ngAnnotate = require('gulp-ng-annotate');
 
 var dependCss = [
-  './node_modules/**/bootstrap.css',//框架引入处
+  './node_modules/**/dist/bootstrap.css',//框架引入处
 ];//急需找到一个gulp插件来整合第三方插件的文件，现在这种笨办法太耗时间
 var dependJs = [
   './node_modules/**/jQuery.js',
-  './node_modules/**/angular.js',//框架引入且排序出
+  './node_modules/**/angular/angular.js',//框架引入
+  './node_modules/**/angular-ui-router.js',
+  './node_modules/**/ui-bootstrap-tpls.js',
 ];
 var injectDevDependJs = [
   './dist.dev/plugin/**/jQuery.js',//有些框架之间需要顺序，就在这里单独写
@@ -132,7 +134,7 @@ gulp.task('templates-dev', function () {
       }
     }))
     .pipe(templateCache({
-      module: 'testAngular.templates'
+      module: 'TestAngular.templates'
     }))
     .pipe(gulp.dest('./dist.dev/js'));
 });
