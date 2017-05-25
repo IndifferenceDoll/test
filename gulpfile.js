@@ -5,7 +5,7 @@
 
 //如果有新引入的js或者css框架的话，需要在extractJs-dev引入、extractCss-dev引入、extractCss-pro引入、extractJs-pro引入且排序、inject-dev排序
 //1.其中引入extractCss-pro和extractCss-dev的css框架，引入到dependCss数组里就可以
-//2.其中引入extractJs-pro和extractJs-dev的js框架，引入到dependJs数组里并根据需要排序就可以
+//2.其中引入extractJs-pro和extractJs-dev的js框架，引入到dependJs数组里就可以
 //3.其中引入inject-dev的js框架在injectDevDependJs数组里引入并排序就可以了
   //一般2和3一起改，1单独改，及个别框架需要123一起改
   //更多详细注释在doc/gulpfile.md里，如果这里有修改的地方，请在doc/gulpfile.md里也修改并写上详细说明
