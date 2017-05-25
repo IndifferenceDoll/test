@@ -4,7 +4,7 @@
  */
 /* body上绑定的controller，代替$rootScope进行其他全局设置
 */
-testAngular.controller('testAngularController', function ($rootScope, $scope) {
+TestAngular.controller('TestAngularController', function ($rootScope, $scope) {
 
 
 });
