@@ -13,7 +13,11 @@
 
   <!--全局提示框-->
 
-  <div ui-view class="mainView">
+  <div class="opening" ng-show="flagVm.isOpening" ng-click="isOpeningTransform()">
+    <img src="./images/appOpening/hellowWorld.jpg">
+  </div>
+
+  <div ui-view class="mainView" ng-show="flagVm.isMainView">
 
   </div>
   <!-- inject:js -->

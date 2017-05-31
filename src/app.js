@@ -8,6 +8,7 @@ var TestAngular = angular.module('TestAngular', [
   'TestAngular.templates',
 
   'ui.bootstrap',
+  'ngAnimate',
   'ui.router'
 ]);
 
@@ -31,7 +32,7 @@ TestAngular.config(function($compileProvider,$httpProvider){
   $compileProvider.debugInfoEnabled(false);//false关闭，true开启
 
 
-  $httpProvider.interceptors.push('xxx');//写一个拦截器,如下，放到这里，添加到interceptors数组内即可
+  //$httpProvider.interceptors.push('xxx');//写一个拦截器,如下，放到这里，添加到interceptors数组内即可
   //* page拦截器
   //* 用于page返回无list时手动添加新list
   //*/
@@ -79,8 +80,11 @@ TestAngular.config(function($compileProvider,$httpProvider){
   //});
 });
 
-TestAngular.run(function(){
+TestAngular.run(function($rootScope){
   //项目启动初始化
+  //$rootScope.animate = {
+  //  isOpening:true
+  //};
 });
 
 angular.module('TestAngular.templates', []);

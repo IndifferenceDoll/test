@@ -11,9 +11,34 @@
   body{
     width: 100%;
     height: 950px;
+    .opening{
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 999;
+      img{
+        width: 100%;
+        height: 100%;
+      }
+    }
     .mainView{
       width: 100%;
       height: 100%;
       background: red;
     }
+  }
+
+  .opening.ng-hide-remove{//ng-show为true时的动画ng-hide-remove，false的动画是ng-hide-add
+    animation: openingAnimates 1s ease forwards;
+    -webkit-animation: openingAnimates 1s ease forwards;
+  }
+  @-webkit-keyframes openingAnimates {
+    0%{opacity:0;}
+    100%{opacity:1;}
+  }
+  @keyframes openingAnimates {
+    0%{opacity:0;}
+    100%{opacity:1;}
   }

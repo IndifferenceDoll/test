@@ -43,10 +43,12 @@ var dependJs = [
   './node_modules/**/angular/angular.js',//框架引入
   './node_modules/**/angular-ui-router.js',
   './node_modules/**/ui-bootstrap-tpls.js',
+  './node_modules/**/angular-animate.js',
 ];
 var injectDevDependJs = [
   './dist.dev/plugin/**/jQuery.js',//有些框架之间需要顺序，就在这里单独写
   './dist.dev/plugin/**/angular.js',
+  './dist.dev/plugin/**/angular-animate.js',
   './dist.dev/**/*.js',
   './dist.dev/**/*.css'
   ];
