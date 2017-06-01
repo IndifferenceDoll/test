@@ -1,26 +1,26 @@
 <!DOCTYPE html>
 <html lang="en"  ng-app="TestAngular">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
-  <title>testAngular</title>
-  <!-- inject:css -->
-  <!-- endinject -->
-</head>
-<body ng-controller="TestAngularController">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+    <title>testAngular</title>
+    <!-- inject:css -->
+    <!-- endinject -->
+  </head>
+  <body ng-controller="TestAngularController">
 
-  <!--载入等待标识-->
+    <!--载入等待标识-->
 
-  <!--全局提示框-->
+    <!--全局提示框-->
 
-  <div class="opening" ng-show="flagVm.isOpening" ng-click="isOpeningTransform()">
-    <img src="./images/appOpening/hellowWorld.jpg">
-  </div>
+    <div class="opening" ng-show="flagVm.isOpening" ng-click="isOpeningTransform()">
+      <img id="opening" src="./images/appOpening/hellowWorld.jpg">
+    </div>
 
-  <div ui-view class="mainView" ng-show="flagVm.isMainView">
+    <div ui-view class="mainView" ng-show="flagVm.isMainView">
 
-  </div>
-  <!-- inject:js -->
-  <!-- endinject -->
-</body>
+    </div>
+    <!-- inject:js -->
+    <!-- endinject -->
+  </body>
 </html>

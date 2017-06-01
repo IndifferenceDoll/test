@@ -5,6 +5,8 @@
 
 var TestAngular = angular.module('TestAngular', [
   //各种插件注入
+  'HomeAngular',
+
   'TestAngular.templates',
 
   'ui.bootstrap',
@@ -15,13 +17,13 @@ var TestAngular = angular.module('TestAngular', [
 TestAngular.config(function($stateProvider,$urlRouterProvider){
   //路由设置
 
-  //$urlRouterProvider.otherwise('');//当跳转不属于下面任一时，跳转此路由
-  //
-  //$stateProvider//常规路由设置
-  //  .state('home', {
-  //    url: '/home',
-  //    template: ''
-  //  });
+  $urlRouterProvider.otherwise('/home');//当跳转不属于下面任一时，跳转此路由
+
+  $stateProvider//常规路由设置
+    .state('home', {
+      url: '/home',
+      template: '<home></home>'
+    });
 });
 
 TestAngular.config(function($compileProvider,$httpProvider){

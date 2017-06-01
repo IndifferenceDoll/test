@@ -72,7 +72,7 @@ gulp.task('images-dev', () => {
 });
 
 gulp.task('scss-dev', () => {
-  return gulp.src('./src/app.scss')
+  return gulp.src(['./src/app.scss','./src/**/*.css'])
     .pipe(plumber({
       errorHandler: (err) => {
         gutil.beep();
@@ -213,7 +213,7 @@ gulp.task('images-pro', () => {
 });
 
 gulp.task('scss-pro', () => {
-  return gulp.src('./src/app.scss')
+  return gulp.src(['./src/app.scss','./src/**/*.css'])
     .pipe(plumber({
       errorHandler: (err) => {
         gutil.beep();
