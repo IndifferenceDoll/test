@@ -3,6 +3,8 @@
  * Created by jin on 2016/12/13.
  */
 
+//详细注释在doc/gulpfile.md下
+
 //如果有新引入的js或者css框架的话，需要在extractJs-dev引入、extractCss-dev引入、extractCss-pro引入、extractJs-pro引入且排序、inject-dev排序
 //1.其中引入extractCss-pro和extractCss-dev的css框架，引入到dependCss数组里就可以
 //2.其中引入extractJs-pro和extractJs-dev的js框架，引入到dependJs数组里就可以
@@ -44,11 +46,13 @@ var dependJs = [
   './node_modules/**/angular-ui-router.js',
   './node_modules/**/ui-bootstrap-tpls.js',
   './node_modules/**/angular-animate.js',
+  './node_modules/**/ng-file-upload.js',
 ];
 var injectDevDependJs = [
   './dist.dev/plugin/**/jQuery.js',//有些框架之间需要顺序，就在这里单独写
   './dist.dev/plugin/**/angular.js',
   './dist.dev/plugin/**/angular-animate.js',
+  './dist.dev/plugin/**/ng-file-upload.js',
   './dist.dev/**/*.js',
   './dist.dev/**/*.css'
   ];

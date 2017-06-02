@@ -2,6 +2,6 @@
 /**
  * Created by jin on 2017/6/1.
  */
-var homeAngular = angular.module('HomeAngular',[
+var HomeAngular = angular.module('HomeAngular',[
 
 ]);

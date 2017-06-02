@@ -1,5 +1,6 @@
 @import "home/home";
 @import "common/common";
+@import "opening/opening";
 
   body,ol,ul,h1,h2,h3,h4,h5,h6,p,th,td,dl,dd,form,fieldset,legend,input,textarea,select{margin:0;padding:0}
   body{font:12px"宋体","Arial Narrow",HELVETICA;background:#fff;-webkit-text-size-adjust:100%;}
@@ -13,49 +14,14 @@
 
   body{
     width: 100%;
-    height: 950px;
-    .opening{
+    .mainView{
       position: absolute;
-      left: 0;
-      right: 0;
+      width: 100%;
       top: 0;
       bottom: 0;
-      z-index: 999;
-      img{
-        width: 100%;
-        height: 100%;
-      }
+      z-index: 888;
+      overflow: hidden;
     }
-    .mainView{
-      width: 100%;
-      height: 100%;
-    }
-  }
-
-  .opening.ng-hide-remove{//ng-show为true时的动画ng-hide-remove，false的动画是ng-hide-add
-     animation: openingAnimates 1s ease forwards;
-     -webkit-animation: openingAnimates 1s ease forwards;
-   }
-  @-webkit-keyframes openingAnimates {
-    0%{opacity:0;}
-    100%{opacity:1;}
-  }
-  @keyframes openingAnimates {
-    0%{opacity:0;}
-    100%{opacity:1;}
-  }
-  .opening.ng-hide-add{//ng-show为true时的动画ng-hide-remove，false的动画是ng-hide-add
-    animation: openingAnimatesReverse 1s ease forwards;
-    -webkit-animation: openingAnimatesReverse 1s ease forwards;
-  }
-  @-webkit-keyframes openingAnimatesReverse {
-    0%{opacity:1;}
-    100%{opacity:0;}
-  }
-  @keyframes openingAnimatesReverse {
-    0%{opacity:1;transform: scale(1);}
-    50%{opacity:.5;transform: scale(1.5);}
-    100%{opacity:0;transform: scale(0);}
   }
 
 

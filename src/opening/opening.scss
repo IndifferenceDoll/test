@@ -1,0 +1,41 @@
+.opening{
+  position: absolute;
+  width: 100%;
+  top: 0;
+  bottom: 0;
+  z-index: 999;
+  img{
+    width: 100%;
+    height: 100%;
+  }
+}
+
+
+.opening.ng-hide-remove{//ng-show为true时的动画ng-hide-remove，false的动画是ng-hide-add
+  animation: openingAnimates 1s ease forwards;
+  -webkit-animation: openingAnimates 1s ease forwards;
+}
+@-webkit-keyframes openingAnimates {
+  0%{opacity:0;transform: scale(0);}
+  50%{opacity:.5;transform: scale(1.5);}
+  100%{opacity:1;transform: scale(1);}
+}
+@keyframes openingAnimates {
+  0%{opacity:0;transform: scale(0);}
+  50%{opacity:.5;transform: scale(1.5);}
+  100%{opacity:1;transform: scale(1);}
+}
+.opening.ng-hide-add{//ng-show为true时的动画ng-hide-remove，false的动画是ng-hide-add
+  animation: openingAnimatesReverse 1s ease forwards;
+  -webkit-animation: openingAnimatesReverse 1s ease forwards;
+}
+@-webkit-keyframes openingAnimatesReverse {
+  0%{opacity:1;transform: scale(1);}
+  50%{opacity:.5;transform: scale(1.5);}
+  100%{opacity:0;transform: scale(0);}
+}
+@keyframes openingAnimatesReverse {
+  0%{opacity:1;transform: scale(1);}
+  50%{opacity:.5;transform: scale(1.5);}
+  100%{opacity:0;transform: scale(0);}
+}

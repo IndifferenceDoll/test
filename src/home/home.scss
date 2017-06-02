@@ -1,5 +1,34 @@
 .homeModule{
   width: 100%;
-  height: 1200px;
+  height: 100%;
   background: skyblue;
+}
+
+.homeModule.ng-hide-remove{//ng-show为true时的动画ng-hide-remove，false的动画是ng-hide-add
+  animation: homeAnimates 1s ease forwards;
+  -webkit-animation: homeAnimates 1s ease forwards;
+}
+@-webkit-keyframes homeAnimates {
+  0%{opacity:0;transform: scale(0);}
+  50%{opacity:.5;transform: scale(1.5);}
+  100%{opacity:1;transform: scale(1);}
+}
+@keyframes homeAnimates {
+  0%{opacity:0;transform: scale(0);}
+  50%{opacity:.5;transform: scale(1.5);}
+  100%{opacity:1;transform: scale(1);}
+}
+.homeModule.ng-hide-add{//ng-show为true时的动画ng-hide-remove，false的动画是ng-hide-add
+  animation: homeAnimatesReverse 1s ease forwards;
+  -webkit-animation: homeAnimatesReverse 1s ease forwards;
+}
+@-webkit-keyframes homeAnimatesReverse {
+  0%{opacity:1;transform: scale(1);}
+  50%{opacity:.5;transform: scale(1.5);}
+  100%{opacity:0;transform: scale(0);}
+}
+@keyframes homeAnimatesReverse {
+  0%{opacity:1;transform: scale(1);}
+  50%{opacity:.5;transform: scale(1.5);}
+  100%{opacity:0;transform: scale(0);}
 }

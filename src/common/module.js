@@ -2,6 +2,6 @@
 /**
  * Created by jin on 2017/6/1.
  */
-var commomAngular = angular.module('CommonAngular',[
+var CommonAngular = angular.module('CommonAngular',[
 
 ]);
