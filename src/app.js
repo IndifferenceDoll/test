@@ -45,7 +45,7 @@ TestAngular.config(($httpProvider, $compileProvider)=> {
   // 关闭调试模式
   $compileProvider.debugInfoEnabled(false);//false关闭，true开启
 
-  $httpProvider.interceptors.push('DemoInterceptor');//写一个拦截器,如下，放到这里，添加到interceptors数组内即可
+  $httpProvider.interceptors.push('DemoInterceptor');//写一个拦截，添加到interceptors数组内即可
 
 });
 

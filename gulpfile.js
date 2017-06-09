@@ -94,12 +94,12 @@ gulp.task('scss-dev', () => {
 
 gulp.task('compileJs-dev', () => {
   return gulp.src(['./src/app.js','./src/**/module.js','./src/**/*.js'])
-    .pipe(plumber({
-      errorHandler: (err) => {
-        gutil.beep();
-        gutil.log(err.toString());
-      }
-    }))
+    //.pipe(plumber({
+    //  errorHandler: (err) => {
+    //    gutil.beep();
+    //    gutil.log(err.toString());
+    //  }
+    //}))
     .pipe(babel({
       presets: ['es2015']
     }))
@@ -184,7 +184,7 @@ gulp.task('watch', () => {
       'src/images/**/*.{jpg,png,svg,gif,ico}'
     ],
     (e) => {
-      sequence('images-dev','scss-dev','compileJs-dev', 'inject-dev', 'reload')
+      sequence('images-dev','scss-dev','compileJs-dev','templates-dev', 'inject-dev', 'reload')
       ((err) => {
         if (err) {
           console.log(err);

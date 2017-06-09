@@ -1,4 +1,9 @@
 
-<div class="opening" ng-show="flagVm.isOpening" ng-click="isOpeningTransform()">
-  <img id="opening" src="../images/appOpening/hellowWorld.jpg">
+<div class="opening" ng-show="flagVm.isOpening" ng-click="isOpeningTransform()" ng-mousemove="starMove($event)">
+  <img class="opening__imgBg" id="opening" src="../images/appOpening/starBg.jpg">
+  <div class="opening__earth">
+    <p class="opening__word">Hollew World</p>
+    <img src="../images/appOpening/earth.png">
+  </div>
+
 </div>
