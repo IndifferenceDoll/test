@@ -7,8 +7,8 @@
     position: absolute;
     width: 120%;
     height: 120%;
-    margin-top: -10%;
-    margin-left: -10%;
+    top: -10%;
+    left: -10%;
     z-index: 888;
   }
   .opening__earth{
@@ -17,9 +17,9 @@
     height: 650px;
     z-index: 999;
     left: 50%;
-    top: 50%;
-    -webkit-transform: translateX(-50%) translateY(-30%);
-    transform: translateX(-50%) translateY(-30%);
+    top:50%;
+    -webkit-transform: translateX(-50%) translateY(15%);
+    transform: translateX(-50%) translateY(15%);
     .opening__word{
       width: 100%;
       color:white;

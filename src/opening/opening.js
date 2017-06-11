@@ -31,11 +31,11 @@ OpeningAngular.controller('OpeningController', ($scope, $timeout, $state)=> {
 
   $scope.starMove = (e)=> {
 
-    e.currentTarget.children[0].style.marginTop = -document.documentElement.clientHeight / 10 -  e.clientY / 10 + 'px';
-    e.currentTarget.children[0].style.marginLeft = -document.documentElement.clientWidth / 10 -  e.clientX / 10 + 'px';
+    e.currentTarget.children[0].style.marginTop =  - (e.clientY / 5 - document.documentElement.clientHeight / 10) + 'px';
+    e.currentTarget.children[0].style.marginLeft = - (e.clientX / 5 - document.documentElement.clientWidth / 10) + 'px';
 
-    e.currentTarget.children[1].style.marginTop = e.clientY / 15 + 'px';
-    e.currentTarget.children[1].style.marginLeft = e.clientX / 15 + 'px';
+    e.currentTarget.children[1].style.marginTop = (e.clientY - document.documentElement.clientWidth / 2) / 10 + 'px';
+    e.currentTarget.children[1].style.marginLeft = (e.clientX - document.documentElement.clientWidth / 2) / 10 + 'px';
 
   };
 
