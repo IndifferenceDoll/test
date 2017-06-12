@@ -38,6 +38,7 @@ TestAngular.config(($urlRouterProvider, $stateProvider)=> {
     });
 });
 
+
 TestAngular.config(($httpProvider, $compileProvider)=> {
   //拦截器及调试,拦截器拦截的是所有的http请求
 
