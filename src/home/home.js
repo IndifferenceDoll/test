@@ -52,4 +52,5 @@ HomeAngular.controller('HomeController', ($scope, $timeout, $state)=> {//control
     }, 1000);
   };
 
+
 });

@@ -33,7 +33,7 @@ TestAngular.config(($urlRouterProvider, $stateProvider)=> {
       template: '<opening></opening>'
     })
     .state('home', {
-      url: '/home',
+      url: '/home/{type}',
       template: '<home></home>'
     });
 });
