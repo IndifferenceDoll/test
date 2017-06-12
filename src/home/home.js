@@ -2,19 +2,19 @@
 /**
  * Created by jin on 2017/6/1.
  */
-HomeAngular.directive('home',function(){
+HomeAngular.directive('home', function () {
 
-  return{
+  return {
 
-    restrict:'EA',//E为元素，A为属性，C为样式，M为注释
-    scope:false,//默认为false，1.false为继承父scope，且修改子scope同样影响并作用父scope，2.true为继承，但修改子不影响父，相当于深复制一版，3.scope是一个对象时，为独立scope，与父完全没有关系，只属于自己。
-    templateUrl:'home/home.html',
-    transclude:false,//默认为false，1.为false时，替换目标元素里所有元素，2.为true时，保留目标元素里的内容，并把元内容放在<div ng-transclude></div>
-    controller:'HomeController',
+    restrict: 'EA',//E为元素，A为属性，C为样式，M为注释
+    scope: false,//默认为false，1.false为继承父scope，且修改子scope同样影响并作用父scope，2.true为继承，但修改子不影响父，相当于深复制一版，3.scope是一个对象时，为独立scope，与父完全没有关系，只属于自己。
+    templateUrl: 'home/home.html',
+    transclude: false,//默认为false，1.为false时，替换目标元素里所有元素，2.为true时，保留目标元素里的内容，并把元内容放在<div ng-transclude></div>
+    controller: 'HomeController',
     //controllerAs:Vm,//将controller对象命名为Vm
     compile(element, attributes){//目标元素及属性，这是后处于编译阶段，无scope
       //用于收集指令，编译模板，可以作用到所有的子指令，然后返回一系列的link函数等待执行（只运行一次）；
-      return{//这是compile的对象，返回后成为link
+      return {//这是compile的对象，返回后成为link
 
         pre(scope, element, attributes) {//编译基本完成，具备作用域scope，element, attributes同上
           //运行于Compile之后但是在子指令关联之前，个人认为，这里可以做一些Scope的计算或赋值之类的，然后再去绑定，
@@ -35,21 +35,21 @@ HomeAngular.directive('home',function(){
 
 });
 
-HomeAngular.controller('HomeController',($scope,$timeout,$state)=>{//controller另一种写法
+HomeAngular.controller('HomeController', ($scope, $timeout, $state)=> {//controller另一种写法
 
   $scope.flagVm = {
-    isHome:false,
+    isHome: false,
   };
-  $timeout(()=>{
+  $timeout(()=> {
     $scope.flagVm.isHome = true;
-  },50);
+  }, 50);
 
-  $scope.isHomeTransform = ()=>{
+  $scope.isHomeTransform = ()=> {
     $scope.flagVm.isHome = false;
 
     $timeout(()=> {
       $state.go('opening');
-    },1000);
+    }, 1000);
   };
 
 });

@@ -29,13 +29,13 @@ OpeningAngular.controller('OpeningController', ($scope, $timeout, $state)=> {
     }, 1000);
   };
 
-  $scope.starMove = (e)=> {
+  $scope.starMove = (e)=> {//鼠标移动事件
 
-    e.currentTarget.children[0].style.marginTop =  - (e.clientY / 5 - document.documentElement.clientHeight / 10) + 'px';
-    e.currentTarget.children[0].style.marginLeft = - (e.clientX / 5 - document.documentElement.clientWidth / 10) + 'px';
+    e.currentTarget.children[0].style.marginTop =  - (e.clientY / 5 - document.documentElement.clientHeight / 10) + 'px';//背景图的上下位移，反于鼠标移动方向
+    e.currentTarget.children[0].style.marginLeft = - (e.clientX / 5 - document.documentElement.clientWidth / 10) + 'px';//背景图的左右位移，反于鼠标移动方向
 
-    e.currentTarget.children[1].style.marginTop = (e.clientY - document.documentElement.clientWidth / 2) / 10 + 'px';
-    e.currentTarget.children[1].style.marginLeft = (e.clientX - document.documentElement.clientWidth / 2) / 10 + 'px';
+    e.currentTarget.children[1].style.marginTop = (e.clientY - document.documentElement.clientWidth / 2) / 10 + 'px';//前景图上下位移，同于鼠标移动方向
+    e.currentTarget.children[1].style.marginLeft = (e.clientX - document.documentElement.clientWidth / 2) / 10 + 'px';//前景图左右位移，同于鼠标移动方向
 
   };
 
