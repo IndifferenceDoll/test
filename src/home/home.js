@@ -12,7 +12,7 @@ HomeAngular.directive('home', function () {
     transclude: false,//默认为false，1.为false时，替换目标元素里所有元素，2.为true时，保留目标元素里的内容，并把元内容放在<div ng-transclude></div>
     controller: 'HomeController',
     //controllerAs:Vm,//将controller对象命名为Vm
-    compile(element, attributes){//目标元素及属性，这是后处于编译阶段，无scope
+    compile(element, attributes){//目标元素及属性，这时候处于编译阶段，无scope
       //用于收集指令，编译模板，可以作用到所有的子指令，然后返回一系列的link函数等待执行（只运行一次）；
       return {//这是compile的对象，返回后成为link
 

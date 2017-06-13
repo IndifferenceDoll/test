@@ -28,14 +28,14 @@ TestAngular.config(($urlRouterProvider, $stateProvider)=> {
   $urlRouterProvider.otherwise('/opening');//当跳转不属于下面任一时，跳转此路由
 
   $stateProvider//常规路由设置
-    .state('opening', {
-      url: '/opening',
-      template: '<opening></opening>'
-    })
-    .state('home', {
-      url: '/home/',
-      template: '<home></home>'
-    });
+  .state('opening', {
+    url: '/opening',
+    template: '<opening></opening>'
+  })
+  .state('home', {
+    url: '/home',
+    template: '<home></home>'
+  });
 });
 
 
