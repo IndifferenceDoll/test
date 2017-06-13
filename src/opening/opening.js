@@ -25,7 +25,7 @@ OpeningAngular.controller('OpeningController', ($scope, $timeout, $state)=> {
     $scope.flagVm.isOpening = false;
 
     $timeout(()=> {
-      $state.go('home',{type:0});
+      $state.go('home');
     }, 1000);
   };
 
